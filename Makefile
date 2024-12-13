@@ -146,6 +146,18 @@ pytest:
 		PYTHONPATH=. \
 		pytest -v \
 			-l tests/ \
+			-m "not performance" \
+			$(PYTHON_MODULES)
+
+.PHONY: performance-pytest
+# Run Python benchmark tests
+performance-pytest:
+	cd lib; \
+		PYTHONPATH=. \
+		pytest -v \
+			-l tests/ \
+			-m "performance" \
+			--benchmark-autosave \
 			$(PYTHON_MODULES)
 
 # Run Python integration tests.
@@ -218,6 +230,7 @@ clean:
 	find . -name '*.pyc' -type f -delete || true
 	find . -name __pycache__ -type d -delete || true
 	find . -name .pytest_cache -exec rm -rfv {} \; || true
+	find . -name '.benchmarks' -type d -exec rm -rfv {} \; || true
 	rm -rf .mypy_cache
 	rm -rf .ruff_cache
 	rm -f lib/streamlit/proto/*_pb2.py*

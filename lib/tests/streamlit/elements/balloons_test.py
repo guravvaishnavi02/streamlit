@@ -14,11 +14,13 @@
 
 """Balloons unit test."""
 
+import pytest
+
 import streamlit as st
 from tests.delta_generator_test_case import DeltaGeneratorTestCase
 
 
-class BallonsTest(DeltaGeneratorTestCase):
+class BalloonsTest(DeltaGeneratorTestCase):
     """Test ability to marshall balloons protos."""
 
     def test_st_balloons(self):
@@ -26,3 +28,7 @@ class BallonsTest(DeltaGeneratorTestCase):
         st.balloons()
         el = self.get_delta_from_queue().new_element
         self.assertEqual(el.balloons.show, True)
+
+    @pytest.mark.usefixtures("benchmark")
+    def test_st_balloons_perf(self):
+        self.benchmark(st.balloons)
