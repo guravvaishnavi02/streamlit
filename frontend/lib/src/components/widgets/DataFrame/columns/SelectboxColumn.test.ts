@@ -17,7 +17,7 @@
 import { GridCellKind } from "@glideapps/glide-data-grid"
 import { DropdownCellType } from "@glideapps/glide-data-grid-cells"
 
-import { Type as ArrowType } from "@streamlit/lib/src/dataframes/Quiver"
+import { Type as ArrowType } from "@streamlit/lib/src/dataframes/arrowTypeUtils"
 
 import SelectboxColumn, { SelectboxColumnParams } from "./SelectboxColumn"
 import { BaseColumnProps, isErrorCell, isMissingValueCell } from "./utils"
@@ -40,6 +40,7 @@ const SELECTBOX_COLUMN_TEMPLATE: Partial<BaseColumnProps> = {
   isEditable: true,
   isHidden: false,
   isIndex: false,
+  isPinned: false,
   isStretched: false,
 }
 
@@ -132,14 +133,14 @@ describe("SelectboxColumn", () => {
     expect(isErrorCell(errorCell)).toEqual(true)
   })
 
-  it("uses faded style for index columns", () => {
+  it("uses faded style for pinned columns", () => {
     const mockColumn = getSelectboxColumn(
       MOCK_CATEGORICAL_TYPE,
       {
         options: ["foo", "bar"],
       },
       {
-        isIndex: true,
+        isPinned: true,
       }
     )
 

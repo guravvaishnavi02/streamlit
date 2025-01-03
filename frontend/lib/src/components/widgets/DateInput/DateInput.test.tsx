@@ -157,6 +157,8 @@ describe("DateInput widget", () => {
 
     render(<DateInput {...props} />)
     const datePicker = screen.getByTestId("stDateInputField")
+    // TODO: Utilize user-event instead of fireEvent
+    // eslint-disable-next-line testing-library/prefer-user-event
     fireEvent.change(datePicker, { target: { value: newDate } })
 
     expect(screen.getByTestId("stDateInputField")).toHaveValue(newDate)
@@ -177,6 +179,8 @@ describe("DateInput widget", () => {
     render(<DateInput {...props} />)
     const dateInput = screen.getByTestId("stDateInputField")
 
+    // TODO: Utilize user-event instead of fireEvent
+    // eslint-disable-next-line testing-library/prefer-user-event
     fireEvent.change(dateInput, {
       target: { value: newDate },
     })
@@ -184,6 +188,8 @@ describe("DateInput widget", () => {
     expect(dateInput).toHaveValue(newDate)
 
     // Simulating clearing the date input
+    // TODO: Utilize user-event instead of fireEvent
+    // eslint-disable-next-line testing-library/prefer-user-event
     fireEvent.change(dateInput, {
       target: { value: null },
     })
@@ -193,14 +199,14 @@ describe("DateInput widget", () => {
     expect(dateInput).toHaveValue(fullOriginalDate)
   })
 
-  it("has a minDate", () => {
+  it("has a minDate", async () => {
+    const user = userEvent.setup()
     const props = getProps({})
 
     render(<DateInput {...props} />)
 
     const dateInput = screen.getByTestId("stDateInputField")
-
-    fireEvent.focus(dateInput)
+    await user.click(dateInput)
 
     expect(
       screen.getByLabelText("Not available. Monday, January 19th 1970.")
@@ -212,7 +218,8 @@ describe("DateInput widget", () => {
     ).toBeTruthy()
   })
 
-  it("has a minDate if passed", () => {
+  it("has a minDate if passed", async () => {
+    const user = userEvent.setup()
     const props = getProps({
       min: "2020/01/05",
       // Choose default so min is in the default page when the widget is opened.
@@ -222,8 +229,7 @@ describe("DateInput widget", () => {
     render(<DateInput {...props} />)
 
     const dateInput = screen.getByTestId("stDateInputField")
-
-    fireEvent.focus(dateInput)
+    await user.click(dateInput)
 
     expect(
       screen.getByLabelText("Not available. Saturday, January 4th 2020.")
@@ -234,7 +240,8 @@ describe("DateInput widget", () => {
     ).toBeTruthy()
   })
 
-  it("has a maxDate if it is passed", () => {
+  it("has a maxDate if it is passed", async () => {
+    const user = userEvent.setup()
     const props = getProps({
       max: "2020/01/25",
       // Choose default so min is in the default page when the widget is opened.
@@ -244,8 +251,7 @@ describe("DateInput widget", () => {
     render(<DateInput {...props} />)
 
     const dateInput = screen.getByTestId("stDateInputField")
-
-    fireEvent.focus(dateInput)
+    await user.click(dateInput)
 
     expect(
       screen.getByLabelText(
@@ -268,6 +274,8 @@ describe("DateInput widget", () => {
     render(<DateInput {...props} />)
 
     const dateInput = screen.getByTestId("stDateInputField")
+    // TODO: Utilize user-event instead of fireEvent
+    // eslint-disable-next-line testing-library/prefer-user-event
     fireEvent.change(dateInput, {
       target: { value: newDate },
     })

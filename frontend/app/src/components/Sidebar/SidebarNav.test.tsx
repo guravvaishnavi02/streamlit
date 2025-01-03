@@ -17,7 +17,8 @@
 import React from "react"
 
 import * as reactDeviceDetect from "react-device-detect"
-import { fireEvent, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
+import { userEvent } from "@testing-library/user-event"
 
 import { IAppPage, mockEndpoints, render } from "@streamlit/lib"
 
@@ -240,6 +241,7 @@ describe("SidebarNav", () => {
   })
 
   it("renders View less button when expanded", async () => {
+    const user = userEvent.setup()
     render(
       <SidebarNav
         {...getProps({
@@ -264,7 +266,7 @@ describe("SidebarNav", () => {
     )
 
     // Click on the separator to expand the nav component.
-    fireEvent.click(screen.getByTestId("stSidebarNavViewButton"))
+    await user.click(screen.getByTestId("stSidebarNavViewButton"))
 
     const viewLessButton = await screen.findByText("View less")
     expect(viewLessButton).toBeInTheDocument()
@@ -330,7 +332,8 @@ describe("SidebarNav", () => {
     expect(navLinks).toHaveLength(10)
   })
 
-  it("toggles to expanded and back when the View more/less buttons are clicked", () => {
+  it("toggles to expanded and back when the View more/less buttons are clicked", async () => {
+    const user = userEvent.setup()
     render(
       <SidebarNav
         {...getProps({
@@ -357,15 +360,16 @@ describe("SidebarNav", () => {
     expect(screen.getByTestId("stSidebarNavSeparator")).toBeInTheDocument()
     expect(screen.getAllByTestId("stSidebarNavLink")).toHaveLength(10)
     // Expand the pages menu
-    fireEvent.click(screen.getByTestId("stSidebarNavViewButton"))
+    await user.click(screen.getByTestId("stSidebarNavViewButton"))
 
     expect(screen.getAllByTestId("stSidebarNavLink")).toHaveLength(14)
     // Collapse the pages menu
-    fireEvent.click(screen.getByTestId("stSidebarNavViewButton"))
+    await user.click(screen.getByTestId("stSidebarNavViewButton"))
     expect(screen.getAllByTestId("stSidebarNavLink")).toHaveLength(10)
   })
 
-  it("displays partial sections", () => {
+  it("displays partial sections", async () => {
+    const user = userEvent.setup()
     render(
       <SidebarNav
         {...getProps({
@@ -397,17 +401,18 @@ describe("SidebarNav", () => {
     expect(screen.getAllByTestId("stNavSectionHeader")).toHaveLength(2)
 
     // Expand the pages menu
-    fireEvent.click(screen.getByTestId("stSidebarNavViewButton"))
+    await user.click(screen.getByTestId("stSidebarNavViewButton"))
 
     expect(screen.getAllByTestId("stSidebarNavLink")).toHaveLength(14)
     expect(screen.getAllByTestId("stNavSectionHeader")).toHaveLength(2)
     // Collapse the pages menu
-    fireEvent.click(screen.getByTestId("stSidebarNavViewButton"))
+    await user.click(screen.getByTestId("stSidebarNavViewButton"))
     expect(screen.getAllByTestId("stSidebarNavLink")).toHaveLength(10)
     expect(screen.getAllByTestId("stNavSectionHeader")).toHaveLength(2)
   })
 
-  it("will not display a section if no pages in it are visible", () => {
+  it("will not display a section if no pages in it are visible", async () => {
+    const user = userEvent.setup()
     // First section has 6 pages, second section has 4 pages, third section has 4 pages
     // Since 6+4 = 10, only the first two sections should be visible
     render(
@@ -441,28 +446,30 @@ describe("SidebarNav", () => {
     expect(screen.getAllByTestId("stNavSectionHeader")).toHaveLength(2)
 
     // Expand the pages menu
-    fireEvent.click(screen.getByTestId("stSidebarNavViewButton"))
+    await user.click(screen.getByTestId("stSidebarNavViewButton"))
 
     expect(screen.getAllByTestId("stSidebarNavLink")).toHaveLength(14)
     expect(screen.getAllByTestId("stNavSectionHeader")).toHaveLength(3)
     // Collapse the pages menu
-    fireEvent.click(screen.getByTestId("stSidebarNavViewButton"))
+    await user.click(screen.getByTestId("stSidebarNavViewButton"))
     expect(screen.getAllByTestId("stSidebarNavLink")).toHaveLength(10)
     expect(screen.getAllByTestId("stNavSectionHeader")).toHaveLength(2)
   })
 
-  it("passes the pageScriptHash to onPageChange if a link is clicked", () => {
+  it("passes the pageScriptHash to onPageChange if a link is clicked", async () => {
+    const user = userEvent.setup()
     const props = getProps()
     render(<SidebarNav {...props} />)
 
     const links = screen.getAllByTestId("stSidebarNavLink")
-    fireEvent.click(links[1])
+    await user.click(links[1])
 
     expect(props.onPageChange).toHaveBeenCalledWith("other_page_hash")
     expect(props.collapseSidebar).not.toHaveBeenCalled()
   })
 
-  it("collapses sidebar on page change when on mobile", () => {
+  it("collapses sidebar on page change when on mobile", async () => {
+    const user = userEvent.setup()
     // @ts-expect-error
     reactDeviceDetect.isMobile = true
 
@@ -470,7 +477,7 @@ describe("SidebarNav", () => {
     render(<SidebarNav {...props} />)
 
     const links = screen.getAllByTestId("stSidebarNavLink")
-    fireEvent.click(links[1])
+    await user.click(links[1])
 
     expect(props.onPageChange).toHaveBeenCalledWith("other_page_hash")
     expect(props.collapseSidebar).toHaveBeenCalled()

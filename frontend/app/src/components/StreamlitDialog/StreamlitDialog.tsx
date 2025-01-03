@@ -26,12 +26,9 @@ import {
   ModalHeader,
   SessionInfo,
   StreamlitMarkdown,
+  StreamlitSyntaxHighlighter,
 } from "@streamlit/lib"
 import { STREAMLIT_HOME_URL } from "@streamlit/app/src/urls"
-import {
-  StyledCode,
-  StyledPre,
-} from "@streamlit/lib/src/components/elements/CodeBlock/styled-components"
 
 import { SettingsDialog, Props as SettingsDialogProps } from "./SettingsDialog"
 import ThemeCreatorDialog, {
@@ -205,7 +202,7 @@ function clearCacheDialog(props: ClearCacheProps): ReactElement {
           <StreamlitMarkdown source={clearCacheInfo} allowHTML={false} />
         </ModalBody>
         <ModalFooter>
-          <ModalButton kind={BaseButtonKind.TERTIARY} onClick={props.onClose}>
+          <ModalButton kind={BaseButtonKind.GHOST} onClick={props.onClose}>
             Cancel
           </ModalButton>
           <ModalButton
@@ -234,13 +231,9 @@ function scriptCompileErrorDialog(
     <Modal isOpen onClose={props.onClose} size="auto" autoFocus={false}>
       <ModalHeader>Script execution error</ModalHeader>
       <ModalBody>
-        <div>
-          <StyledPre>
-            <StyledCode>
-              {props.exception ? props.exception.message : "No message"}
-            </StyledCode>
-          </StyledPre>
-        </div>
+        <StreamlitSyntaxHighlighter showLineNumbers={false} wrapLines={false}>
+          {props.exception?.message ? props.exception.message : "No message"}
+        </StreamlitSyntaxHighlighter>
       </ModalBody>
       <ModalFooter>
         <ModalButton kind={BaseButtonKind.SECONDARY} onClick={props.onClose}>
@@ -311,7 +304,7 @@ function deployErrorDialog({
         <StyledDeployErrorContent>{msg}</StyledDeployErrorContent>
       </ModalBody>
       <ModalFooter>
-        <ModalButton kind={BaseButtonKind.TERTIARY} onClick={onTryAgain}>
+        <ModalButton kind={BaseButtonKind.GHOST} onClick={onTryAgain}>
           Try again
         </ModalButton>
         <ModalButton

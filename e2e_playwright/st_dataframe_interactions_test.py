@@ -19,7 +19,12 @@ from playwright.sync_api import FrameLocator, Locator, Page, Route, expect
 
 from e2e_playwright.conftest import IframedPage, ImageCompareFunction, wait_for_app_run
 from e2e_playwright.shared.app_utils import expect_prefixed_markdown, get_element_by_key
-from e2e_playwright.shared.dataframe_utils import click_on_cell, get_open_cell_overlay
+from e2e_playwright.shared.dataframe_utils import (
+    calc_middle_cell_position,
+    click_on_cell,
+    expect_canvas_to_be_visible,
+    get_open_cell_overlay,
+)
 from e2e_playwright.shared.toolbar_utils import (
     assert_fullscreen_toolbar_button_interactions,
 )
@@ -74,6 +79,7 @@ def test_data_editor_delete_row_via_toolbar(
     data_editor_element = themed_app.get_by_test_id("stDataFrame").nth(1)
     data_editor_toolbar = data_editor_element.get_by_test_id("stElementToolbar")
 
+    expect_canvas_to_be_visible(data_editor_element)
     # Select the second row
     data_editor_element.click(position={"x": 10, "y": 100})
     # Take a snapshot to check if row is selected:
@@ -203,7 +209,8 @@ def test_open_search_via_hotkey(app: Page, assert_snapshot: ImageCompareFunction
 def test_clicking_on_fullscreen_toolbar_button(
     app: Page, assert_snapshot: ImageCompareFunction
 ):
-    """Test that clicking on fullscreen toolbar button expands the dataframe into fullscreen."""
+    """Test that clicking on fullscreen toolbar button expands the dataframe into
+    fullscreen."""
 
     assert_fullscreen_toolbar_button_interactions(
         app,
@@ -271,8 +278,10 @@ def _test_csv_download(
     with page.expect_download(timeout=10000) as download_info:
         download_csv_toolbar_button.click()
 
-        # playwright does not support all fileaccess APIs yet (see this issue: https://github.com/microsoft/playwright/issues/8850)
-        # this means we don't know if the system dialog opened to pick a location (expect_file_chooser does not work). So as a workaround, we wait for now and then press enter.
+        # playwright does not support all fileaccess APIs yet (see this
+        # issue: https://github.com/microsoft/playwright/issues/8850) This means we
+        # don't know if the system dialog opened to pick a location (expect_file_chooser
+        # does not work). So as a workaround, we wait for now and then press enter.
         if click_enter_on_file_picker:
             page.wait_for_timeout(1000)
             page.keyboard.press("Enter")
@@ -281,9 +290,14 @@ def _test_csv_download(
     download_path = download.path()
     with open(download_path, encoding="UTF-8") as f:
         content = f.read()
-        # the app uses a fixed seed, so the data is always the same. This is the reason why we can check it here.
-        some_row = "1,-0.977277879876411,0.9500884175255894,-0.1513572082976979,-0.10321885179355784,0.41059850193837233"
-        # we usually try to avoid assert in playwright tests, but since we don't have to wait for any UI interaction or DOM state, it's ok here
+        # the app uses a fixed seed, so the data is always the same. This is the reason
+        # why we can check it here.
+        some_row = (
+            "1,-0.977277879876411,0.9500884175255894,-0.1513572082976979,"
+            "-0.10321885179355784,0.41059850193837233"
+        )
+        # we usually try to avoid assert in playwright tests, but since we don't have to
+        # wait for any UI interaction or DOM state, it's ok here
         assert some_row in content
 
 
@@ -292,21 +306,26 @@ def test_csv_download_button(
 ):
     """Test that the csv download button works.
 
-    Note that the library we are using calls the file picker API to download the file. This is not supported in headless mode. Hence, the test
-    triggers different code paths in the app depending on the browser and the launch arguments.
+    Note that the library we are using calls the file picker API to download the file.
+    This is not supported in headless mode. Hence, the test triggers different code
+    paths in the app depending on the browser and the launch arguments.
     """
 
     click_enter_on_file_picker = False
 
-    # right now the filechooser will only be opened on Chrome. Maybe this will change in the future and the
-    # check has to be updated; or maybe playwright will support the file-access APIs better.
-    # In headless mode, the file-access API our csv-download button uses under-the-hood does not work. So we monkey-patch it to throw an error and trigger our alternative download logic.
+    # right now the filechooser will only be opened on Chrome. Maybe this will change in
+    # the future and the check has to be updated; or maybe playwright will support the
+    # file-access APIs better. In headless mode, the file-access API our csv-download
+    # button uses under-the-hood does not work. So we monkey-patch it to throw an error
+    # and trigger our alternative download logic.
     if browser_name == "chromium":
         if browser_type_launch_args.get("headless", False):
             click_enter_on_file_picker = True
         else:
             app.evaluate(
-                "() => window.showSaveFilePicker = () => {throw new Error('Monkey-patched showOpenFilePicker')}",
+                """() => window.showSaveFilePicker = () => {
+                    throw new Error('Monkey-patched showOpenFilePicker')
+                }""",
             )
     _test_csv_download(app, app.locator("body"), click_enter_on_file_picker)
 
@@ -314,8 +333,9 @@ def test_csv_download_button(
 def test_csv_download_button_in_iframe(iframed_app: IframedPage):
     """Test that the csv download button works in an iframe.
 
-    Based on the test behavior and the fact that we don't have to patch the 'window.showSaveFilePicker' as in the test above,
-    it seems that the fallback download method is used.
+    Based on the test behavior and the fact that we don't have to patch the
+    'window.showSaveFilePicker' as in the test above, it seems that the fallback
+    download method is used.
     """
 
     page: Page = iframed_app.page
@@ -327,11 +347,14 @@ def test_csv_download_button_in_iframe(iframed_app: IframedPage):
 def test_csv_download_button_in_iframe_with_new_tab_host_config(
     iframed_app: IframedPage,
 ):
-    """Test that the csv download button works in an iframe and the host-config enforced download in new tab.
+    """Test that the csv download button works in an iframe and the host-config enforced
+    download in new tab.
 
-    Based on the test behavior and the fact that we don't have to patch the 'window.showSaveFilePicker' as in the test above,
+    Based on the test behavior and the fact that we don't have to patch the
+    'window.showSaveFilePicker' as in the test above,
     it seems that the fallback download method is used.
-    If this ever changes, the host-config[enforceDownloadInNewTab] might not take any effect as it is only used in the fallback mechanism.
+    If this ever changes, the host-config[enforceDownloadInNewTab] might not take any
+    effect as it is only used in the fallback mechanism.
     """
     page: Page = iframed_app.page
 
@@ -343,7 +366,8 @@ def test_csv_download_button_in_iframe_with_new_tab_host_config(
 
     page.route("**/_stcore/host-config", fulfill_host_config_request)
 
-    # ensure that the route interception works and we get the correct enforceDownloadInNewTab config
+    # ensure that the route interception works and we get the correct
+    # enforceDownloadInNewTab config
     with page.expect_event(
         "response",
         lambda response: response.url.endswith("_stcore/host-config")
@@ -359,6 +383,7 @@ def test_number_cell_read_only_overlay_formatting(
 ):
     """Test that the number cell overlay is formatted correctly."""
     overlay_test_df = themed_app.get_by_test_id("stDataFrame").nth(2)
+    expect_canvas_to_be_visible(overlay_test_df)
     # Click on the first cell of the table
     click_on_cell(overlay_test_df, 1, 0, double_click=True, column_width="medium")
     cell_overlay = get_open_cell_overlay(themed_app)
@@ -370,9 +395,16 @@ def test_number_cell_read_only_overlay_formatting(
 def test_number_cell_editing(themed_app: Page, assert_snapshot: ImageCompareFunction):
     """Test that the number cell can be edited."""
     cell_overlay_test_df = themed_app.get_by_test_id("stDataFrame").nth(3)
+    expect_canvas_to_be_visible(cell_overlay_test_df)
+
     # Click on the first cell of the table
     click_on_cell(cell_overlay_test_df, 1, 0, double_click=True, column_width="medium")
     cell_overlay = get_open_cell_overlay(themed_app)
+    # On some browsers the cell content is highlighted, so we enforce it to make the
+    # test consistent and stable across all browsers
+    cell_overlay.click()
+    cell_overlay.press("ControlOrMeta+A")
+
     # Get the (number) input element and check the value
     expect(cell_overlay.locator(".gdg-input")).to_have_attribute("value", "1231231.41")
     assert_snapshot(cell_overlay, name="st_data_editor-number_col_editor")
@@ -392,9 +424,12 @@ def test_text_cell_read_only_overlay_formatting(
 ):
     """Test that the text cell overlay is formatted correctly."""
     overlay_test_df = themed_app.get_by_test_id("stDataFrame").nth(2)
+    expect_canvas_to_be_visible(overlay_test_df)
+
     # Click on the first cell of the table
     click_on_cell(overlay_test_df, 1, 1, double_click=True, column_width="medium")
     cell_overlay = get_open_cell_overlay(themed_app)
+
     # Get the (text) input element and check the value
     expect(cell_overlay.locator(".gdg-input")).to_have_text("hello\nworld")
     assert_snapshot(cell_overlay, name="st_dataframe-text_col_overlay")
@@ -403,9 +438,16 @@ def test_text_cell_read_only_overlay_formatting(
 def test_text_cell_editing(themed_app: Page, assert_snapshot: ImageCompareFunction):
     """Test that the number cell can be edited."""
     cell_overlay_test_df = themed_app.get_by_test_id("stDataFrame").nth(3)
+    expect_canvas_to_be_visible(cell_overlay_test_df)
+
     # Click on the first cell of the table
     click_on_cell(cell_overlay_test_df, 1, 1, double_click=True, column_width="medium")
     cell_overlay = get_open_cell_overlay(themed_app)
+
+    # On some browsers the cell content is highlighted, so we enforce it to make the
+    # test consistent and stable across all browsers
+    cell_overlay.click()
+    cell_overlay.press("ControlOrMeta+A")
     # Get the (number) input element and check the value
     expect(cell_overlay.locator(".gdg-input")).to_have_text("hello\nworld")
     assert_snapshot(cell_overlay, name="st_data_editor-text_col_editor")
@@ -425,6 +467,18 @@ def test_text_cell_editing(themed_app: Page, assert_snapshot: ImageCompareFuncti
 def test_custom_css_class_via_key(app: Page):
     """Test that the element can have a custom css class via the key argument."""
     expect(get_element_by_key(app, "data_editor")).to_be_visible()
+
+
+def test_row_hover_highlight(themed_app: Page, assert_snapshot: ImageCompareFunction):
+    """Test that a row gets highlighted when hovering over a cell in the row."""
+    df = themed_app.get_by_test_id("stDataFrame").nth(0)
+    expect_canvas_to_be_visible(df)
+    column_middle_width_px, row_middle_height_px = calc_middle_cell_position(
+        2, 2, "small"
+    )
+    df.hover(position={"x": column_middle_width_px, "y": row_middle_height_px})
+
+    assert_snapshot(df, name="st_dataframe-row_hover_highlight")
 
 
 # TODO(lukasmasuch): Add additional interactive tests:

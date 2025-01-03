@@ -131,7 +131,8 @@ function BaseDateTimeColumn(
     copyData: "",
     readonly: !props.isEditable,
     contentAlign: props.contentAlignment,
-    style: props.isIndex ? "faded" : "normal",
+    // The text in pinned columns should be faded.
+    style: props.isPinned ? "faded" : "normal",
     data: {
       kind: "date-picker-cell",
       date: undefined,
@@ -219,7 +220,7 @@ function BaseDateTimeColumn(
           // The moment date should never be invalid here.
           return getErrorCell(
             toSafeString(cellData),
-            `This should never happen. Please report this bug. \nError: ${momentDate.toString()}`
+            `Invalid moment date. This should never happen. Please report this bug. \nError: ${momentDate.toString()}`
           )
         }
 

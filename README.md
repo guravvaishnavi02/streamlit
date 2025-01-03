@@ -118,6 +118,7 @@ Deploy, manage and share your apps for free using our [Community Cloud](https://
 <img src="https://user-images.githubusercontent.com/7164864/214965336-64500db3-0d79-4a20-8052-2dda883902d2.gif" width="400"></img>
 
 ## Resources
+
 - Explore our [docs](https://docs.streamlit.io) to learn how Streamlit works.
 - Ask questions and get help in our [community forum](https://discuss.streamlit.io).
 - Read our [blog](https://blog.streamlit.io) for tips from developers and creators.
@@ -127,6 +128,12 @@ Deploy, manage and share your apps for free using our [Community Cloud](https://
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](URL_TO_YOUR_APP)
 ```
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/streamlit/roadmap)
+
+## Contribute
+
+🎉 Thanks for your interest in helping improve Streamlit! 🎉
+
+Before contributing, please read our guidelines here: https://github.com/streamlit/streamlit/wiki/Contributing
 
 ## License
 

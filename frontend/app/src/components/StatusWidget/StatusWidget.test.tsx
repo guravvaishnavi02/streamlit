@@ -18,12 +18,7 @@ import React from "react"
 
 import { fireEvent, screen } from "@testing-library/react"
 
-import {
-  mockTheme,
-  render,
-  ScriptRunState,
-  SessionEvent,
-} from "@streamlit/lib"
+import { render, ScriptRunState, SessionEvent } from "@streamlit/lib"
 import { ConnectionState } from "@streamlit/app/src/connection/ConnectionState"
 import { SessionEventDispatcher } from "@streamlit/app/src/SessionEventDispatcher"
 
@@ -38,7 +33,6 @@ const getProps = (
   rerunScript: vi.fn(),
   stopScript: () => {},
   allowRunOnSave: true,
-  theme: mockTheme.emotion,
   ...propOverrides,
 })
 
@@ -133,6 +127,8 @@ describe("StatusWidget element", () => {
     vi.runAllTimers()
     const baseButtonHeader = screen.getByTestId("stBaseButton-header")
 
+    // TODO: Utilize user-event instead of fireEvent
+    // eslint-disable-next-line testing-library/prefer-user-event
     fireEvent.click(baseButtonHeader)
 
     expect(stopScript).toHaveBeenCalled()
@@ -167,6 +163,8 @@ describe("StatusWidget element", () => {
     expect(buttons[1]).toHaveTextContent("Always rerun")
 
     // Click "Rerun" button
+    // TODO: Utilize user-event instead of fireEvent
+    // eslint-disable-next-line testing-library/prefer-user-event
     fireEvent.click(buttons[0])
 
     expect(rerunScript).toHaveBeenCalledWith(false)
@@ -201,6 +199,8 @@ describe("StatusWidget element", () => {
     expect(buttons[1]).toHaveTextContent("Always rerun")
 
     // Click "Always Rerun" button
+    // TODO: Utilize user-event instead of fireEvent
+    // eslint-disable-next-line testing-library/prefer-user-event
     fireEvent.click(buttons[1])
 
     expect(rerunScript).toHaveBeenCalledWith(true)
@@ -258,6 +258,8 @@ describe("StatusWidget element", () => {
     // Verify the Always rerun is visible
     expect(screen.getByText("Always rerun")).toBeInTheDocument()
 
+    // TODO: Utilize user-event instead of fireEvent
+    // eslint-disable-next-line testing-library/prefer-user-event
     fireEvent.keyDown(document.body, {
       key: "a",
       which: 65,
@@ -337,6 +339,9 @@ describe("Running Icon", () => {
   })
 
   it("delays render of running gif", () => {
+    // Set system time so test doesn't fail during New Years
+    vi.setSystemTime(new Date("January 7, 2023 00:00:00"))
+
     render(
       <StatusWidget
         {...getProps({ scriptRunState: ScriptRunState.RUNNING })}

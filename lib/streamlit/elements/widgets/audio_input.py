@@ -132,7 +132,9 @@ class AudioInputMixin:
             based on its content. No two widgets may have the same key.
 
         help : str
-            A tooltip that gets displayed next to the audio input.
+            An optional tooltip that gets displayed next to the widget label.
+            Streamlit only displays the tooltip when
+            ``label_visibility="visible"``.
 
         on_change : callable
             An optional callback invoked when this audio input's value
@@ -157,9 +159,16 @@ class AudioInputMixin:
         Returns
         -------
         None or UploadedFile
-            The UploadedFile class is a subclass of BytesIO, and therefore is
-            "file-like". This means you can pass an instance of it anywhere a
-            file is expected. The MIME type for the audio data is ``audio/wav``.
+            The ``UploadedFile`` class is a subclass of ``BytesIO``, and
+            therefore is "file-like". This means you can pass an instance of it
+            anywhere a file is expected. The MIME type for the audio data is
+            ``audio/wav``.
+
+            .. Note::
+                The resulting ``UploadedFile`` is subject to the size
+                limitation configured in ``server.maxUploadSize``. If you
+                expect large sound files, update the configuration option
+                appropriately.
 
         Examples
         --------

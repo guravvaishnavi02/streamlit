@@ -176,6 +176,7 @@ const BlockNodeRenderer = (props: BlockPropsWithWidth): ReactElement => {
         verticalAlignment={
           node.deltaBlock.column.verticalAlignment ?? undefined
         }
+        showBorder={node.deltaBlock.column.showBorder ?? false}
         className="stColumn"
         data-testid="stColumn"
       >
@@ -330,6 +331,8 @@ const VerticalBlock = (props: BlockPropsWithoutWidth): ReactElement => {
     }
     // We need to update the observer whenever the scrolling is activated or deactivated
     // Otherwise, it still tries to measure the width of the old wrapper element.
+    // TODO: Update to match React best practices
+    // eslint-disable-next-line react-compiler/react-compiler
     /* eslint-disable react-hooks/exhaustive-deps */
   }, [observer, activateScrollToBottom])
 

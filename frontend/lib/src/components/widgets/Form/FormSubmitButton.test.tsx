@@ -15,7 +15,8 @@
  */
 import React from "react"
 
-import { fireEvent, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
+import { userEvent } from "@testing-library/user-event"
 import { enableAllPlugins } from "immer"
 
 import { render } from "@streamlit/lib/src/test_util"
@@ -93,13 +94,14 @@ describe("FormSubmitButton", () => {
   })
 
   it("calls submitForm when clicked", async () => {
+    const user = userEvent.setup()
     const props = getProps()
     vi.spyOn(props.widgetMgr, "submitForm")
     render(<FormSubmitButton {...props} />)
 
     const formSubmitButton = screen.getByRole("button")
 
-    fireEvent.click(formSubmitButton)
+    await user.click(formSubmitButton)
     expect(props.widgetMgr.submitForm).toHaveBeenCalledWith(
       props.element.formId,
       undefined,
@@ -108,13 +110,14 @@ describe("FormSubmitButton", () => {
   })
 
   it("can pass fragmentId to submitForm", async () => {
+    const user = userEvent.setup()
     const props = getProps({ fragmentId: "myFragmentId" })
     vi.spyOn(props.widgetMgr, "submitForm")
     render(<FormSubmitButton {...props} />)
 
     const formSubmitButton = screen.getByRole("button")
 
-    fireEvent.click(formSubmitButton)
+    await user.click(formSubmitButton)
     expect(props.widgetMgr.submitForm).toHaveBeenCalledWith(
       props.element.formId,
       "myFragmentId",

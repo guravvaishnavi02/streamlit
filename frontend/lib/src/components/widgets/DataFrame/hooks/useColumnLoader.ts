@@ -15,17 +15,9 @@
  */
 import React from "react"
 
-import merge from "lodash/merge"
 import { useTheme } from "@emotion/react"
+import merge from "lodash/merge"
 
-import { EmotionTheme } from "@streamlit/lib/src/theme"
-import { Quiver } from "@streamlit/lib/src/dataframes/Quiver"
-import { Arrow as ArrowProto } from "@streamlit/lib/src/proto"
-import {
-  isNullOrUndefined,
-  notNullOrUndefined,
-} from "@streamlit/lib/src/util/utils"
-import { logError, logWarning } from "@streamlit/lib/src/util/log"
 import {
   getAllColumnsFromArrow,
   getColumnTypeFromArrow,
@@ -38,6 +30,14 @@ import {
   ColumnTypes,
   ObjectColumn,
 } from "@streamlit/lib/src/components/widgets/DataFrame/columns"
+import { Quiver } from "@streamlit/lib/src/dataframes/Quiver"
+import { Arrow as ArrowProto } from "@streamlit/lib/src/proto"
+import { EmotionTheme } from "@streamlit/lib/src/theme"
+import { logError, logWarning } from "@streamlit/lib/src/util/log"
+import {
+  isNullOrUndefined,
+  notNullOrUndefined,
+} from "@streamlit/lib/src/util/utils"
 
 // Using this ID for column config will apply the config to all index columns
 export const INDEX_IDENTIFIER = "_index"
@@ -66,6 +66,7 @@ export interface ColumnConfigProps {
   required?: boolean
   default?: number | string | boolean
   alignment?: "left" | "center" | "right"
+  pinned?: boolean
   // uses snake_case to match the property names in the backend:
   type_config?: Record<string, unknown>
 }
@@ -146,6 +147,7 @@ export function applyColumnConfig(
       ? !columnConfig.disabled
       : undefined,
     isHidden: columnConfig.hidden,
+    isPinned: columnConfig.pinned,
     isRequired: columnConfig.required,
     columnTypeOptions: columnConfig.type_config,
     contentAlignment: columnConfig.alignment,
@@ -232,7 +234,7 @@ function useColumnLoader(
 
   // Converts the columns from Arrow into columns compatible with glide-data-grid
   const columns: BaseColumn[] = React.useMemo(() => {
-    let configuredColumns = getAllColumnsFromArrow(data)
+    const visibleColumns = getAllColumnsFromArrow(data)
       .map(column => {
         // Apply column configurations
         let updatedColumn = {
@@ -240,7 +242,6 @@ function useColumnLoader(
           ...applyColumnConfig(column, columnConfigMapping),
           isStretched: stretchColumns,
         } as BaseColumnProps
-
         const ColumnType = getColumnType(updatedColumn)
 
         // Make sure editing is deactivated if the column is read-only, disabled,
@@ -285,34 +286,54 @@ function useColumnLoader(
         return !column.isHidden
       })
 
-    // Reorder columns based on the user configuration:
-    if (element.columnOrder && element.columnOrder.length > 0) {
-      const orderedColumns: BaseColumn[] = []
+    const pinnedColumns: BaseColumn[] = []
+    const unpinnedColumns: BaseColumn[] = []
 
-      // Add all index columns to the beginning of the list:
-      configuredColumns.forEach(column => {
-        if (column.isIndex) {
-          orderedColumns.push(column)
+    if (element.columnOrder?.length) {
+      // Special case: index columns not part of the column order
+      // are shown as the first columns in the table
+      visibleColumns.forEach(column => {
+        if (
+          column.isIndex &&
+          !element.columnOrder.includes(column.name) &&
+          // Don't add the index column if it is explicitly not pinned
+          column.isPinned !== false
+        ) {
+          pinnedColumns.push(column)
         }
       })
 
-      // Reorder non-index columns based on the configured column order:
+      // Reorder columns based on the configured column order:
       element.columnOrder.forEach(columnName => {
-        const column = configuredColumns.find(
+        const column = visibleColumns.find(
           column => column.name === columnName
         )
-        if (column && !column.isIndex) {
-          orderedColumns.push(column)
+        if (column) {
+          if (column.isPinned) {
+            pinnedColumns.push(column)
+          } else {
+            unpinnedColumns.push(column)
+          }
         }
       })
-
-      configuredColumns = orderedColumns
+    } else {
+      // If no column order is configured, we just need to split
+      // the columns into pinned and unpinned:
+      visibleColumns.forEach(column => {
+        if (column.isPinned) {
+          pinnedColumns.push(column)
+        } else {
+          unpinnedColumns.push(column)
+        }
+      })
     }
+
+    const orderedColumns = [...pinnedColumns, ...unpinnedColumns]
 
     // If all columns got filtered out, we add an empty index column
     // to prevent errors from glide-data-grid.
-    return configuredColumns.length > 0
-      ? configuredColumns
+    return orderedColumns.length > 0
+      ? orderedColumns
       : [ObjectColumn(getEmptyIndexColumn())]
   }, [
     data,

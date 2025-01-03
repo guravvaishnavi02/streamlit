@@ -24,7 +24,7 @@ export interface StyledChatInputContainerProps {
 export const StyledChatInputContainer =
   styled.div<StyledChatInputContainerProps>(({ theme, width }) => {
     return {
-      borderRadius: theme.radii.default,
+      borderRadius: theme.radii.xxxl,
       display: "flex",
       backgroundColor:
         theme.colors.widgetBackgroundColor ?? theme.colors.secondaryBg,
@@ -37,7 +37,7 @@ export const StyledChatInput = styled.div(({ theme }) => {
     backgroundColor: theme.colors.transparent,
     position: "relative",
     flexGrow: 1,
-    borderRadius: theme.radii.default,
+    borderRadius: theme.radii.xxxl,
     display: "flex",
     alignItems: "center",
   }
@@ -57,9 +57,9 @@ export const StyledSendIconButton = styled.button<StyledSendIconButtonProps>(
     return {
       border: "none",
       backgroundColor: theme.colors.transparent,
-      borderTopRightRadius: extended ? "0" : theme.radii.default,
+      borderTopRightRadius: extended ? "0" : theme.radii.xxxl,
       borderTopLeftRadius: extended ? theme.radii.default : "0",
-      borderBottomRightRadius: theme.radii.default,
+      borderBottomRightRadius: theme.radii.xxxl,
       display: "inline-flex",
       alignItems: "center",
       justifyContent: "center",
@@ -80,8 +80,7 @@ export const StyledSendIconButton = styled.button<StyledSendIconButtonProps>(
           : theme.colors.gray90,
       },
       "&:hover": {
-        backgroundColor: theme.colors.primary,
-        color: theme.colors.white,
+        color: theme.colors.primary,
       },
       "&:disabled, &:disabled:hover, &:disabled:active": {
         backgroundColor: theme.colors.transparent,

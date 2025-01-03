@@ -94,7 +94,7 @@ class ButtonMixin:
         args: WidgetArgs | None = None,
         kwargs: WidgetKwargs | None = None,
         *,  # keyword-only arguments:
-        type: Literal["primary", "secondary"] = "secondary",
+        type: Literal["primary", "secondary", "tertiary"] = "secondary",
         icon: str | None = None,
         disabled: bool = False,
         use_container_width: bool = False,
@@ -138,20 +138,26 @@ class ButtonMixin:
         kwargs : dict
             An optional dict of kwargs to pass to the callback.
 
-        type : "secondary" or "primary"
-            An optional string that specifies the button type. Can be "primary" for a
-            button with additional emphasis or "secondary" for a normal button. Defaults
-            to "secondary".
+        type : "primary", "secondary", or "tertiary"
+            An optional string that specifies the button type. This can be one
+            of the following:
+
+            - ``"primary"``: The button's background is the app's primary color
+              for additional emphasis.
+            - ``"secondary"`` (default): The button's background coordinates
+              with the app's background color for normal emphasis.
+            - ``"tertiary"``: The button is plain text without a border or
+              background for subtly.
 
         icon : str or None
             An optional emoji or icon to display next to the button label. If ``icon``
             is ``None`` (default), no icon is displayed. If ``icon`` is a
             string, the following options are valid:
 
-            * A single-character emoji. For example, you can set ``icon="🚨"``
+            - A single-character emoji. For example, you can set ``icon="🚨"``
               or ``icon="🔥"``. Emoji short codes are not supported.
 
-            * An icon from the Material Symbols library (rounded style) in the
+            - An icon from the Material Symbols library (rounded style) in the
               format ``":material/icon_name:"`` where "icon_name" is the name
               of the icon in snake case.
 
@@ -181,6 +187,9 @@ class ButtonMixin:
 
         Examples
         --------
+
+        **Example 1: Customize your button type**
+
         >>> import streamlit as st
         >>>
         >>> st.button("Reset", type="primary")
@@ -188,10 +197,15 @@ class ButtonMixin:
         ...     st.write("Why hello there")
         ... else:
         ...     st.write("Goodbye")
+        >>>
+        >>> if st.button("Aloha", type="tertiary"):
+        ...     st.write("Ciao")
 
         .. output::
            https://doc-buton.streamlit.app/
-           height: 220px
+           height: 300px
+
+        **Example 2: Add icons to your button**
 
         Although you can add icons to your buttons through Markdown, the
         ``icon`` parameter is a convenient and consistent alternative.
@@ -214,11 +228,11 @@ class ButtonMixin:
         key = to_key(key)
         ctx = get_script_run_ctx()
 
-        # Checks whether the entered button type is one of the allowed options - either "primary" or "secondary"
-        if type not in ["primary", "secondary"]:
+        # Checks whether the entered button type is one of the allowed options
+        if type not in ["primary", "secondary", "tertiary"]:
             raise StreamlitAPIException(
-                'The type argument to st.button must be "primary" or "secondary". \n'
-                f'The argument passed was "{type}".'
+                'The type argument to st.button must be "primary", "secondary", or "tertiary". '
+                f'\nThe argument passed was "{type}".'
             )
 
         return self.dg._button(
@@ -249,7 +263,7 @@ class ButtonMixin:
         args: WidgetArgs | None = None,
         kwargs: WidgetKwargs | None = None,
         *,  # keyword-only arguments:
-        type: Literal["primary", "secondary"] = "secondary",
+        type: Literal["primary", "secondary", "tertiary"] = "secondary",
         icon: str | None = None,
         disabled: bool = False,
         use_container_width: bool = False,
@@ -320,20 +334,26 @@ class ButtonMixin:
         kwargs : dict
             An optional dict of kwargs to pass to the callback.
 
-        type : "secondary" or "primary"
-            An optional string that specifies the button type. Can be "primary" for a
-            button with additional emphasis or "secondary" for a normal button. Defaults
-            to "secondary".
+        type : "primary", "secondary", or "tertiary"
+            An optional string that specifies the button type. This can be one
+            of the following:
+
+            - ``"primary"``: The button's background is the app's primary color
+              for additional emphasis.
+            - ``"secondary"`` (default): The button's background coordinates
+              with the app's background color for normal emphasis.
+            - ``"tertiary"``: The button is plain text without a border or
+              background for subtly.
 
         icon : str or None
             An optional emoji or icon to display next to the button label. If ``icon``
             is ``None`` (default), no icon is displayed. If ``icon`` is a
             string, the following options are valid:
 
-            * A single-character emoji. For example, you can set ``icon="🚨"``
+            - A single-character emoji. For example, you can set ``icon="🚨"``
               or ``icon="🔥"``. Emoji short codes are not supported.
 
-            * An icon from the Material Symbols library (rounded style) in the
+            - An icon from the Material Symbols library (rounded style) in the
               format ``":material/icon_name:"`` where "icon_name" is the name
               of the icon in snake case.
 
@@ -415,9 +435,9 @@ class ButtonMixin:
         """
         ctx = get_script_run_ctx()
 
-        if type not in ["primary", "secondary"]:
+        if type not in ["primary", "secondary", "tertiary"]:
             raise StreamlitAPIException(
-                'The type argument to st.button must be "primary" or "secondary". \n'
+                'The type argument to st.download_button must be "primary", "secondary", or "tertiary". \n'
                 f'The argument passed was "{type}".'
             )
 
@@ -445,7 +465,7 @@ class ButtonMixin:
         url: str,
         *,
         help: str | None = None,
-        type: Literal["primary", "secondary"] = "secondary",
+        type: Literal["primary", "secondary", "tertiary"] = "secondary",
         icon: str | None = None,
         disabled: bool = False,
         use_container_width: bool = False,
@@ -482,20 +502,26 @@ class ButtonMixin:
             An optional tooltip that gets displayed when the button is
             hovered over.
 
-        type : "secondary" or "primary"
-            An optional string that specifies the button type. Can be "primary" for a
-            button with additional emphasis or "secondary" for a normal button. Defaults
-            to "secondary".
+        type : "primary", "secondary", or "tertiary"
+            An optional string that specifies the button type. This can be one
+            of the following:
+
+            - ``"primary"``: The button's background is the app's primary color
+              for additional emphasis.
+            - ``"secondary"`` (default): The button's background coordinates
+              with the app's background color for normal emphasis.
+            - ``"tertiary"``: The button is plain text without a border or
+              background for subtly.
 
         icon : str or None
             An optional emoji or icon to display next to the button label. If ``icon``
             is ``None`` (default), no icon is displayed. If ``icon`` is a
             string, the following options are valid:
 
-            * A single-character emoji. For example, you can set ``icon="🚨"``
+            - A single-character emoji. For example, you can set ``icon="🚨"``
               or ``icon="🔥"``. Emoji short codes are not supported.
 
-            * An icon from the Material Symbols library (rounded style) in the
+            - An icon from the Material Symbols library (rounded style) in the
               format ``":material/icon_name:"`` where "icon_name" is the name
               of the icon in snake case.
 
@@ -529,9 +555,9 @@ class ButtonMixin:
 
         """
         # Checks whether the entered button type is one of the allowed options - either "primary" or "secondary"
-        if type not in ["primary", "secondary"]:
+        if type not in ["primary", "secondary", "tertiary"]:
             raise StreamlitAPIException(
-                'The type argument to st.link_button must be "primary" or "secondary". '
+                'The type argument to st.link_button must be "primary", "secondary", or "tertiary". '
                 f'\nThe argument passed was "{type}".'
             )
 
@@ -596,10 +622,10 @@ class ButtonMixin:
             is ``None`` (default), no icon is displayed. If ``icon`` is a
             string, the following options are valid:
 
-            * A single-character emoji. For example, you can set ``icon="🚨"``
+            - A single-character emoji. For example, you can set ``icon="🚨"``
               or ``icon="🔥"``. Emoji short codes are not supported.
 
-            * An icon from the Material Symbols library (rounded style) in the
+            - An icon from the Material Symbols library (rounded style) in the
               format ``":material/icon_name:"`` where "icon_name" is the name
               of the icon in snake case.
 
@@ -673,7 +699,7 @@ class ButtonMixin:
         args: WidgetArgs | None = None,
         kwargs: WidgetKwargs | None = None,
         *,  # keyword-only arguments:
-        type: Literal["primary", "secondary"] = "secondary",
+        type: Literal["primary", "secondary", "tertiary"] = "secondary",
         icon: str | None = None,
         disabled: bool = False,
         use_container_width: bool = False,
@@ -747,7 +773,7 @@ class ButtonMixin:
         url: str,
         help: str | None,
         *,  # keyword-only arguments:
-        type: Literal["primary", "secondary"] = "secondary",
+        type: Literal["primary", "secondary", "tertiary"] = "secondary",
         icon: str | None = None,
         disabled: bool = False,
         use_container_width: bool = False,
@@ -859,7 +885,7 @@ class ButtonMixin:
         args: WidgetArgs | None = None,
         kwargs: WidgetKwargs | None = None,
         *,  # keyword-only arguments:
-        type: Literal["primary", "secondary"] = "secondary",
+        type: Literal["primary", "secondary", "tertiary"] = "secondary",
         icon: str | None = None,
         disabled: bool = False,
         use_container_width: bool = False,

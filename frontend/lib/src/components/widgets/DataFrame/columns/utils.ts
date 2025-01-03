@@ -31,10 +31,8 @@ import "moment-timezone"
 import numbro from "numbro"
 import { sprintf } from "sprintf-js"
 
-import {
-  Type as ArrowType,
-  Quiver,
-} from "@streamlit/lib/src/dataframes/Quiver"
+import { formatPeriodType } from "@streamlit/lib/src/dataframes/arrowFormatUtils"
+import { Type as ArrowType } from "@streamlit/lib/src/dataframes/arrowTypeUtils"
 import { EmotionTheme } from "@streamlit/lib/src/theme"
 import {
   isNullOrUndefined,
@@ -62,6 +60,8 @@ export interface BaseColumnProps {
   readonly isHidden: boolean
   // If `True`, the column is a table index:
   readonly isIndex: boolean
+  // If `True`, the column is pinned/frozen:
+  readonly isPinned: boolean
   // If `True`, the column is a stretched:
   readonly isStretched: boolean
   // If `True`, a value is required before the cell or row can be submitted:
@@ -120,29 +120,31 @@ const BOOLEAN_FALSE_VALUES = ["false", "f", "no", "n", "off", "0"]
 /**
  * Interface used for indicating if a cell contains an error.
  */
-interface ErrorCell extends TextCell {
+export interface ErrorCell extends TextCell {
   readonly isError: true
+  readonly errorDetails: string
 }
 
 /**
  * Returns a cell with an error message.
  *
- * @param errorMsg: A short error message to use as display value.
+ * @param errorMsg: A short error message or the wrong value to use as display value.
  * @param errorDetails: The full error message to show when the user
- *                     clicks on a cell.
+ *                     hovers on a cell.
  *
  * @return a read-only GridCell object that can be used by glide-data-grid.
  */
 export function getErrorCell(errorMsg: string, errorDetails = ""): ErrorCell {
-  errorMsg = `⚠️ ${errorMsg}`
   return {
     kind: GridCellKind.Text,
     readonly: true,
     allowOverlay: true,
-    data: errorMsg + (errorDetails ? `\n\n${errorDetails}\n` : ""),
+    data: errorMsg,
     displayData: errorMsg,
+    errorDetails: errorDetails,
     isError: true,
-  } as ErrorCell
+    style: "faded",
+  }
 }
 
 /**
@@ -425,6 +427,23 @@ export function toSafeNumber(value: any): number | null {
 }
 
 /**
+ * Determines the default mantissa to use for the given number.
+ *
+ * @param value - The number to determine the mantissa for.
+ *
+ * @returns The mantissa to use.
+ */
+function determineDefaultMantissa(value: number): number {
+  if (value === 0 || Math.abs(value) >= 0.0001) {
+    return 4
+  }
+
+  const expStr = value.toExponential()
+  const parts = expStr.split("e")
+  return Math.abs(parseInt(parts[1], 10))
+}
+
+/**
  * Formats the given number to a string based on a provided format or the default format.
  *
  * @param value - The number to format.
@@ -444,15 +463,27 @@ export function formatNumber(
   }
 
   if (isNullOrUndefined(format) || format === "") {
-    if (maxPrecision === 0) {
-      // Numbro is unable to format the number with 0 decimals.
-      value = Math.round(value)
+    // If no format is provided, use the default format
+    if (notNullOrUndefined(maxPrecision)) {
+      // Use the configured precision to influence how the number is formatted
+      if (maxPrecision === 0) {
+        // Numbro is unable to format the number with 0 decimals.
+        value = Math.round(value)
+      }
+
+      return numbro(value).format({
+        thousandSeparated: true,
+        mantissa: maxPrecision,
+        trimMantissa: false,
+      })
     }
-    return numbro(value).format(
-      notNullOrUndefined(maxPrecision)
-        ? `0,0.${"0".repeat(maxPrecision)}`
-        : `0,0.[0000]` // If no precision is given, use 4 decimals and hide trailing zeros
-    )
+
+    // Use a default format if no precision is given
+    return numbro(value).format({
+      thousandSeparated: true,
+      mantissa: determineDefaultMantissa(value),
+      trimMantissa: true,
+    })
   }
 
   if (format === "percent") {
@@ -468,7 +499,7 @@ export function formatNumber(
   } else if (format === "duration[ns]") {
     return moment.duration(value / (1000 * 1000), "milliseconds").humanize()
   } else if (format.startsWith("period[")) {
-    return Quiver.formatPeriodType(BigInt(value), format as any)
+    return formatPeriodType(BigInt(value), format as any)
   }
 
   return sprintf(format, value)
@@ -672,7 +703,8 @@ export function getLinkDisplayValueFromRegex(
     if (patternMatch && patternMatch[1] !== undefined) {
       // return the first matching group
       // Since this might be a URI encoded value, we decode it.
-      return decodeURI(patternMatch[1])
+      // Note: we replace + with %20 to correctly convert + to whitespaces.
+      return decodeURIComponent(patternMatch[1].replace(/\+/g, "%20"))
     }
 
     // if the regex doesn't find a match with the url, just use the url as display value

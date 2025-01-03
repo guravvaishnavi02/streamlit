@@ -62,7 +62,12 @@ module.exports = {
     "**/vendor/*",
     "**/node_modules/*",
   ],
-  plugins: ["no-relative-import-paths", "streamlit-custom", "vitest"],
+  plugins: [
+    "no-relative-import-paths",
+    "streamlit-custom",
+    "vitest",
+    "react-compiler",
+  ],
   // Place to specify ESLint rules.
   // Can be used to overwrite rules specified from the extended configs
   rules: {
@@ -217,8 +222,20 @@ module.exports = {
         "newlines-between": "always",
       },
     ],
+    "react-compiler/react-compiler": "error",
     "streamlit-custom/no-hardcoded-theme-values": "error",
     "streamlit-custom/use-strict-null-equality-checks": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        paths: [
+          {
+            name: "timezone-mock",
+            message: "Please use the withTimezones test harness instead",
+          },
+        ],
+      },
+    ],
   },
   overrides: [
     {
@@ -226,6 +243,14 @@ module.exports = {
       files: ["**/*.test.ts", "**/*.test.tsx", "lib/src/theme/**/*"],
       rules: {
         "streamlit-custom/no-hardcoded-theme-values": ["off"],
+      },
+    },
+    {
+      // test-only rules
+      files: ["**/*.test.ts", "**/*.test.tsx"],
+      extends: ["plugin:testing-library/react"],
+      rules: {
+        "testing-library/prefer-user-event": "error",
       },
     },
   ],

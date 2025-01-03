@@ -16,7 +16,8 @@
 
 import React from "react"
 
-import { fireEvent, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
+import { userEvent } from "@testing-library/user-event"
 
 import { render } from "@streamlit/lib/src/test_util"
 import { Block as BlockProto } from "@streamlit/lib/src/proto"
@@ -72,7 +73,8 @@ describe("Dialog container", () => {
     expect(() => screen.getByText("test")).toThrow()
   })
 
-  it("should close when dismissible", () => {
+  it("should close when dismissible", async () => {
+    const user = userEvent.setup()
     const props = getProps()
     render(
       <Dialog {...props}>
@@ -81,7 +83,7 @@ describe("Dialog container", () => {
     )
 
     expect(screen.getByText("test")).toBeVisible()
-    fireEvent.click(screen.getByLabelText("Close"))
+    await user.click(screen.getByLabelText("Close"))
     // dialog should be closed by clicking outside and, thus, the content should be gone
     expect(() => screen.getByText("test")).toThrow()
   })

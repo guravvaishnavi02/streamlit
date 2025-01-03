@@ -16,14 +16,9 @@
 
 import React, { ReactElement } from "react"
 
-import {
-  fireEvent,
-  RenderResult,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react"
+import { RenderResult, screen, waitFor, within } from "@testing-library/react"
 import { PLACEMENT, ToasterContainer } from "baseui/toast"
+import { userEvent } from "@testing-library/user-event"
 
 import { render } from "@streamlit/lib/src/test_util"
 import { Toast as ToastProto } from "@streamlit/lib/src/proto"
@@ -102,7 +97,8 @@ describe("Toast Component", () => {
     expect(toast).toContainElement(expandButton)
   })
 
-  test("can expand to see the full toast message & collapse to truncate", () => {
+  test("can expand to see the full toast message & collapse to truncate", async () => {
+    const user = userEvent.setup()
     const props = getProps({
       icon: "",
       body: "Random toast message that is a really really really really really really really really really long message, going way past the 3 line limit",
@@ -120,7 +116,7 @@ describe("Toast Component", () => {
     expect(toast).toContainElement(expandButton)
 
     // Click view more button & expand the message
-    fireEvent.click(expandButton)
+    await user.click(expandButton)
     expect(toast).toHaveTextContent(
       "Random toast message that is a really really really really really really really really really long message, going way past the 3 line limit"
     )
@@ -128,7 +124,7 @@ describe("Toast Component", () => {
     // Click view less button & collapse the message
     const collapseButton = screen.getByRole("button", { name: "view less" })
     expect(toast).toContainElement(collapseButton)
-    fireEvent.click(collapseButton)
+    await user.click(collapseButton)
     expect(toastText).toHaveTextContent(
       "Random toast message that is a really really really really really really really really really long"
     )
@@ -136,6 +132,7 @@ describe("Toast Component", () => {
   })
 
   test("can close toast", async () => {
+    const user = userEvent.setup()
     const props = getProps()
     renderComponent(props)
 
@@ -144,7 +141,7 @@ describe("Toast Component", () => {
     expect(toast).toBeInTheDocument()
     expect(closeButton).toBeInTheDocument()
     // Click close button
-    fireEvent.click(closeButton)
+    await user.click(closeButton)
     // Wait for toast to be removed from DOM
     await waitFor(() => expect(toast).not.toBeInTheDocument())
   })
@@ -205,7 +202,8 @@ describe("Toast Component", () => {
     expect(toastText).toHaveLength(expectedTruncatedMessage.length)
   })
 
-  test("expands and collapses long messages with explicit line breaks correctly", () => {
+  test("expands and collapses long messages with explicit line breaks correctly", async () => {
+    const user = userEvent.setup()
     const messageWithBreaks =
       "First line of the message.\nSecond line of the message, which is very long and meant to test the expand and collapse functionality.\nThird line, which should initially be hidden."
     const expectedTruncatedMessage = shortenMessage(messageWithBreaks)
@@ -213,7 +211,7 @@ describe("Toast Component", () => {
     renderComponent(props)
 
     const expandButton = screen.getByRole("button", { name: "view more" })
-    fireEvent.click(expandButton) // Expand
+    await user.click(expandButton) // Expand
 
     const toastExpanded = screen
       .getByRole("alert")
@@ -221,7 +219,7 @@ describe("Toast Component", () => {
     expect(toastExpanded).toEqual(messageWithBreaks) // Check full message is displayed
 
     const collapseButton = screen.getByRole("button", { name: "view less" })
-    fireEvent.click(collapseButton) // Collapse
+    await user.click(collapseButton) // Collapse
 
     const toastCollapsed = screen
       .getByRole("alert")

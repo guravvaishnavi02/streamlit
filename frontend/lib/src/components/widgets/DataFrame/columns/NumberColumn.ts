@@ -16,12 +16,12 @@
 
 import { GridCell, GridCellKind, NumberCell } from "@glideapps/glide-data-grid"
 
-import { Quiver } from "@streamlit/lib/src/dataframes/Quiver"
+import { isIntegerType } from "@streamlit/lib/src/components/widgets/DataFrame/isIntegerType"
+import { getTypeName } from "@streamlit/lib/src/dataframes/arrowTypeUtils"
 import {
   isNullOrUndefined,
   notNullOrUndefined,
 } from "@streamlit/lib/src/util/utils"
-import { isIntegerType } from "@streamlit/lib/src/components/widgets/DataFrame/isIntegerType"
 
 import {
   BaseColumn,
@@ -55,7 +55,7 @@ export interface NumberColumnParams {
  * This supports float, integer, and unsigned integer types.
  */
 function NumberColumn(props: BaseColumnProps): BaseColumn {
-  const arrowTypeName = Quiver.getTypeName(props.arrowType)
+  const arrowTypeName = getTypeName(props.arrowType)
   let format = undefined
   if (arrowTypeName === "timedelta64[ns]") {
     // Use duration formatting for timedelta64[ns] type:
@@ -92,7 +92,8 @@ function NumberColumn(props: BaseColumnProps): BaseColumn {
     readonly: !props.isEditable,
     allowOverlay: true,
     contentAlign: props.contentAlignment || "right",
-    style: props.isIndex ? "faded" : "normal",
+    // The text in pinned columns should be faded.
+    style: props.isPinned ? "faded" : "normal",
     allowNegative,
     fixedDecimals,
     // We don't want to show any thousand separators

@@ -16,7 +16,8 @@
 
 import React from "react"
 
-import { fireEvent, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
+import { userEvent } from "@testing-library/user-event"
 
 import { mockSessionInfo, render } from "@streamlit/lib"
 import { MetricsManager } from "@streamlit/app/src/MetricsManager"
@@ -85,19 +86,20 @@ describe("ToolbarActions", () => {
     expect(screen.getByTestId("stToolbarActions")).toHaveStyle("display: flex")
   })
 
-  it("calls sendMessageToHost with correct args when clicked", () => {
+  it("calls sendMessageToHost with correct args when clicked", async () => {
+    const user = userEvent.setup()
     const props = getProps()
     render(<ToolbarActions {...props} />)
 
     const favoriteButton = screen.getAllByTestId("stBaseButton-header")[0]
-    fireEvent.click(favoriteButton)
+    await user.click(favoriteButton)
     expect(props.sendMessageToHost).toHaveBeenLastCalledWith({
       type: "TOOLBAR_ITEM_CALLBACK",
       key: "favorite",
     })
 
     const shareButton = screen.getByRole("button", { name: "Share" })
-    fireEvent.click(shareButton)
+    await user.click(shareButton)
     expect(props.sendMessageToHost).toHaveBeenLastCalledWith({
       type: "TOOLBAR_ITEM_CALLBACK",
       key: "share",

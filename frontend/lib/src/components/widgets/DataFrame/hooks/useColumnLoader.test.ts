@@ -16,9 +16,6 @@
 
 import { renderHook } from "@testing-library/react-hooks"
 
-import { Quiver } from "@streamlit/lib/src/dataframes/Quiver"
-import { Arrow as ArrowProto } from "@streamlit/lib/src/proto"
-import { UNICODE } from "@streamlit/lib/src/mocks/arrow"
 import {
   BaseColumn,
   CheckboxColumn,
@@ -29,6 +26,9 @@ import {
   SelectboxColumn,
   TextColumn,
 } from "@streamlit/lib/src/components/widgets/DataFrame/columns"
+import { Quiver } from "@streamlit/lib/src/dataframes/Quiver"
+import { UNICODE } from "@streamlit/lib/src/mocks/arrow"
+import { Arrow as ArrowProto } from "@streamlit/lib/src/proto"
 
 import useColumnLoader, {
   applyColumnConfig,
@@ -53,6 +53,7 @@ const MOCK_COLUMNS: BaseColumn[] = [
     isEditable: false,
     isHidden: false,
     isIndex: true,
+    isPinned: true,
     isStretched: false,
   }),
   NumberColumn({
@@ -67,6 +68,7 @@ const MOCK_COLUMNS: BaseColumn[] = [
     isEditable: false,
     isHidden: false,
     isIndex: false,
+    isPinned: false,
     isStretched: false,
   }),
   TextColumn({
@@ -81,6 +83,7 @@ const MOCK_COLUMNS: BaseColumn[] = [
     isEditable: false,
     isHidden: false,
     isIndex: false,
+    isPinned: false,
     isStretched: false,
   }),
 ]
@@ -242,6 +245,7 @@ describe("getColumnType", () => {
         isEditable: false,
         isHidden: false,
         isIndex: false,
+        isPinned: false,
         isStretched: false,
         columnTypeOptions: {
           type: typeName,
@@ -420,5 +424,36 @@ describe("useColumnLoader hook", () => {
     for (const column of result.current.columns) {
       expect(column.icon).toBe(undefined)
     }
+  })
+
+  it("uses column order to order pinned columns", () => {
+    const element = ArrowProto.create({
+      data: UNICODE,
+      columnOrder: ["c2", "c1"],
+      columns: JSON.stringify({
+        c1: {
+          pinned: true,
+        },
+        c2: {
+          pinned: true,
+        },
+      }),
+    })
+
+    const data = new Quiver(element)
+
+    const { result } = renderHook(() => {
+      return useColumnLoader(element, data, false)
+    })
+
+    // Range index:
+    expect(result.current.columns[0].name).toBe("")
+    expect(result.current.columns[0].isIndex).toBe(true)
+
+    // Pinned columns:
+    expect(result.current.columns[1].name).toBe("c2")
+    expect(result.current.columns[1].isPinned).toBe(true)
+    expect(result.current.columns[2].name).toBe("c1")
+    expect(result.current.columns[2].isPinned).toBe(true)
   })
 })

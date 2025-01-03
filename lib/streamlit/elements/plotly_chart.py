@@ -273,7 +273,7 @@ class PlotlyMixin:
     def plotly_chart(
         self,
         figure_or_data: FigureOrData,
-        use_container_width: bool = False,
+        use_container_width: bool = True,
         *,
         theme: Literal["streamlit"] | None = "streamlit",
         key: Key | None = None,
@@ -290,7 +290,7 @@ class PlotlyMixin:
     def plotly_chart(
         self,
         figure_or_data: FigureOrData,
-        use_container_width: bool = False,
+        use_container_width: bool = True,
         *,
         theme: Literal["streamlit"] | None = "streamlit",
         key: Key | None = None,
@@ -307,7 +307,7 @@ class PlotlyMixin:
     def plotly_chart(
         self,
         figure_or_data: FigureOrData,
-        use_container_width: bool = False,
+        use_container_width: bool = True,
         *,
         theme: Literal["streamlit"] | None = "streamlit",
         key: Key | None = None,
@@ -328,6 +328,10 @@ class PlotlyMixin:
         To show Plotly charts in Streamlit, call ``st.plotly_chart`` wherever
         you would call Plotly's ``py.plot`` or ``py.iplot``.
 
+        .. Important::
+            You must install ``plotly`` to use this command. Your app's
+            performance may be enhanced by installing ``orjson`` as well.
+
         Parameters
         ----------
         figure_or_data : plotly.graph_objs.Figure, plotly.graph_objs.Data,\
@@ -338,11 +342,11 @@ class PlotlyMixin:
 
         use_container_width : bool
             Whether to override the figure's native width with the width of
-            the parent container. If ``use_container_width`` is ``False``
-            (default), Streamlit sets the width of the chart to fit its contents
-            according to the plotting library, up to the width of the parent
-            container. If ``use_container_width`` is ``True``, Streamlit sets
-            the width of the figure to match the width of the parent container.
+            the parent container. If ``use_container_width`` is ``True`` (default),
+            Streamlit sets the width of the figure to match the width of the parent
+            container. If ``use_container_width`` is ``False``, Streamlit sets the
+            width of the chart to fit its contents according to the plotting library,
+            up to the width of the parent container.
 
         theme : "streamlit" or None
             The theme of the chart. If ``theme`` is ``"streamlit"`` (default),
@@ -427,7 +431,7 @@ class PlotlyMixin:
         ...         hist_data, group_labels, bin_size=[.1, .25, .5])
         >>>
         >>> # Plot!
-        >>> st.plotly_chart(fig, use_container_width=True)
+        >>> st.plotly_chart(fig)
 
         .. output::
            https://doc-plotly-chart.streamlit.app/

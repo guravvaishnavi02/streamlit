@@ -16,7 +16,8 @@
 
 import React from "react"
 
-import { act, fireEvent, screen } from "@testing-library/react"
+import { act, screen } from "@testing-library/react"
+import { userEvent } from "@testing-library/user-event"
 
 import { render } from "@streamlit/lib/src/test_util"
 import { WidgetStateManager } from "@streamlit/lib/src/WidgetStateManager"
@@ -165,14 +166,15 @@ describe("Radio widget", () => {
     expect(noOptionLabel).toBeInTheDocument()
   })
 
-  it("sets the widget value when an option is selected", () => {
+  it("sets the widget value when an option is selected", async () => {
+    const user = userEvent.setup()
     const props = getProps()
     vi.spyOn(props.widgetMgr, "setIntValue")
     render(<Radio {...props} />)
     const radioOptions = screen.getAllByRole("radio")
     const secondOption = radioOptions[1]
 
-    fireEvent.click(secondOption)
+    await user.click(secondOption)
 
     expect(props.widgetMgr.setIntValue).toHaveBeenLastCalledWith(
       props.element,
@@ -183,7 +185,8 @@ describe("Radio widget", () => {
     expect(secondOption).toBeChecked()
   })
 
-  it("resets its value when form is cleared", () => {
+  it("resets its value when form is cleared", async () => {
+    const user = userEvent.setup()
     // Create a widget in a clearOnSubmit form
     const props = getProps({ formId: "form" })
     props.widgetMgr.setFormSubmitBehaviors("form", true)
@@ -195,7 +198,7 @@ describe("Radio widget", () => {
     const secondOption = radioOptions[1]
 
     // Change the widget value
-    fireEvent.click(secondOption)
+    await user.click(secondOption)
     expect(secondOption).toBeChecked()
 
     expect(props.widgetMgr.setIntValue).toHaveBeenLastCalledWith(

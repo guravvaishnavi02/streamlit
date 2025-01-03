@@ -27,6 +27,7 @@ import pytest
 from parameterized import parameterized
 
 from streamlit import config, env_util
+from streamlit.config import ShowErrorDetailsConfigOptions
 from streamlit.config_option import ConfigOption
 from streamlit.errors import StreamlitAPIException
 
@@ -58,15 +59,25 @@ class ConfigTest(unittest.TestCase):
     def test_set_user_option_scriptable(self):
         """Test that scriptable options can be set from API."""
         # This is set in lib/tests/conftest.py to off
-        self.assertEqual(True, config.get_option("client.showErrorDetails"))
+        self.assertEqual(
+            ShowErrorDetailsConfigOptions.FULL,
+            config.get_option("client.showErrorDetails"),
+        )
 
         try:
             # client.showErrorDetails can be set after run starts.
-            config.set_user_option("client.showErrorDetails", False)
-            self.assertEqual(False, config.get_option("client.showErrorDetails"))
+            config.set_user_option(
+                "client.showErrorDetails", ShowErrorDetailsConfigOptions.STACKTRACE
+            )
+            self.assertEqual(
+                ShowErrorDetailsConfigOptions.STACKTRACE,
+                config.get_option("client.showErrorDetails"),
+            )
         finally:
             # Restore original value
-            config.set_user_option("client.showErrorDetails", True)
+            config.set_user_option(
+                "client.showErrorDetails", ShowErrorDetailsConfigOptions.FULL
+            )
 
     def test_set_user_option_unscriptable(self):
         """Test that unscriptable options cannot be set with st.set_option."""
@@ -471,15 +482,21 @@ class ConfigTest(unittest.TestCase):
         self.assertEqual(1234, config._maybe_read_env_variable("env:RANDOM_TEST"))
 
     def test_update_config_with_toml(self):
-        self.assertEqual(True, config.get_option("client.showErrorDetails"))
+        self.assertEqual(
+            ShowErrorDetailsConfigOptions.FULL,
+            config.get_option("client.showErrorDetails"),
+        )
         toml = textwrap.dedent(
             """
            [client]
-           showErrorDetails = false
+           showErrorDetails = "type"
         """
         )
         config._update_config_with_toml(toml, "test")
-        self.assertEqual(False, config.get_option("client.showErrorDetails"))
+        self.assertEqual(
+            ShowErrorDetailsConfigOptions.TYPE,
+            config.get_option("client.showErrorDetails"),
+        )
 
     def test_set_option(self):
         with self.assertLogs(logger="streamlit.config", level="WARNING") as cm:

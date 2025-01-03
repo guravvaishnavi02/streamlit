@@ -25,6 +25,7 @@ from e2e_playwright.shared.app_utils import (
 )
 from e2e_playwright.shared.dataframe_utils import (
     calc_middle_cell_position,
+    expect_canvas_to_be_visible,
     select_column,
     select_row,
     sort_column,
@@ -69,6 +70,7 @@ def _get_df_with_index(app: Page) -> Locator:
 
 def test_single_row_select(app: Page):
     canvas = _get_single_row_select_df(app)
+    expect_canvas_to_be_visible(canvas)
 
     # select first row
     select_row(canvas, 1)
@@ -91,6 +93,8 @@ def test_single_row_select(app: Page):
 
 def test_single_row_select_with_sorted_column(app: Page):
     canvas = _get_single_row_select_df(app)
+    expect_canvas_to_be_visible(canvas)
+
     # select first row
     select_row(canvas, 1)
     wait_for_app_run(app)
@@ -128,6 +132,7 @@ def test_single_row_select_with_sorted_column(app: Page):
 
 def test_single_column_select(app: Page):
     canvas = _get_single_column_select_df(app)
+    expect_canvas_to_be_visible(canvas)
 
     select_column(canvas, 1)
     wait_for_app_run(app)
@@ -151,6 +156,8 @@ def test_single_column_select(app: Page):
 
 def test_multi_row_select(app: Page):
     canvas = _get_multi_row_select_df(app)
+    expect_canvas_to_be_visible(canvas)
+    canvas.scroll_into_view_if_needed()
 
     select_row(canvas, 1)
     select_row(canvas, 3)
@@ -167,6 +174,7 @@ def test_multi_row_select(app: Page):
 def test_multi_row_select_all_at_once(app: Page):
     """Test that all rows are selected when clicking on the top-row checkbox."""
     canvas = _get_multi_row_select_df(app)
+    expect_canvas_to_be_visible(canvas)
 
     select_row(canvas, 0)
     wait_for_app_run(app)
@@ -181,6 +189,8 @@ def test_multi_row_select_all_at_once(app: Page):
 
 def test_multi_row_by_keeping_mouse_pressed(app: Page):
     canvas = _get_multi_row_select_df(app)
+    expect_canvas_to_be_visible(canvas)
+
     # we have to scroll into view, otherwise the bounding_box is not correct
     canvas.scroll_into_view_if_needed()
     bounding_box = canvas.bounding_box()
@@ -204,6 +214,7 @@ def test_multi_row_by_keeping_mouse_pressed(app: Page):
 
 def test_multi_column_select(app: Page):
     canvas = _get_multi_column_select_df(app)
+    expect_canvas_to_be_visible(canvas)
 
     select_column(canvas, 1)
     app.keyboard.down(COMMAND_KEY)
@@ -243,12 +254,16 @@ def _expect_multi_row_multi_column_selection(app: Page):
 
 def test_multi_row_and_multi_column_select(app: Page):
     canvas = _get_multi_row_and_column_select_df(app)
+    expect_canvas_to_be_visible(canvas)
+
     _select_some_rows_and_columns(app, canvas)
     _expect_multi_row_multi_column_selection(app)
 
 
 def test_clear_selection_via_escape(app: Page):
     canvas = _get_multi_row_and_column_select_df(app)
+    expect_canvas_to_be_visible(canvas)
+
     _select_some_rows_and_columns(app, canvas)
 
     # make sure we have something selected before clearing it to avoid false-positives
@@ -267,6 +282,7 @@ def test_clear_selection_via_escape(app: Page):
 
 def test_clear_selection_via_toolbar(app: Page):
     canvas = _get_multi_row_and_column_select_df(app)
+    expect_canvas_to_be_visible(canvas)
 
     # toolbar has three buttons: download, search, fullscreen
     dataframe_toolbar = canvas.get_by_test_id("stElementToolbar")
@@ -292,6 +308,7 @@ def test_clear_selection_via_toolbar(app: Page):
 
 def test_in_form_selection_and_session_state(app: Page):
     canvas = _get_in_form_df(app)
+    expect_canvas_to_be_visible(canvas)
     _select_some_rows_and_columns(app, canvas)
 
     _markdown_prefix = "Dataframe-in-form selection:"
@@ -303,7 +320,8 @@ def test_in_form_selection_and_session_state(app: Page):
         exact_match=True,
     )
 
-    # submit the form. The selection uses a debounce of 200ms; if we click too early, the state is not updated correctly and we submit the old, unselected values
+    # submit the form. The selection uses a debounce of 200ms; if we click too early,
+    # the state is not updated correctly and we submit the old, unselected values
     app.wait_for_timeout(210)
     click_form_button(app, "Submit")
 
@@ -324,6 +342,8 @@ def test_in_form_selection_and_session_state(app: Page):
 
 def test_multi_row_and_multi_column_selection_with_callback(app: Page):
     canvas = _get_callback_df(app)
+    expect_canvas_to_be_visible(canvas)
+    canvas.scroll_into_view_if_needed()
     _select_some_rows_and_columns(app, canvas)
 
     expect_prefixed_markdown(
@@ -339,6 +359,8 @@ def test_multi_row_and_multi_column_select_snapshot(
 ):
     """Take a snapshot of multi-select to ensure visual consistency."""
     canvas = _get_multi_row_and_column_select_df(app)
+    expect_canvas_to_be_visible(canvas)
+
     _select_some_rows_and_columns(app, canvas)
     _expect_multi_row_multi_column_selection(app)
 
@@ -354,6 +376,8 @@ def test_selection_state_remains_after_unmounting(
 ):
     """Test that the selection state remains after unmounting the component."""
     canvas = _get_multi_row_and_column_select_df(app)
+    expect_canvas_to_be_visible(canvas)
+
     _select_some_rows_and_columns(app, canvas)
     _expect_multi_row_multi_column_selection(app)
 
@@ -383,12 +407,15 @@ def test_multi_row_and_multi_column_selection_in_fragment(app: Page):
         exact_match=True,
     )
 
-    # Check that the main script has run once (the initial run), but not after the selection:
+    # Check that the main script has run once (the initial run), but not after the
+    # selection:
     expect(app.get_by_text("Runs: 1")).to_be_visible()
 
 
 def test_that_index_cannot_be_selected(app: Page):
     canvas = _get_df_with_index(app)
+    expect_canvas_to_be_visible(canvas)
+
     canvas.scroll_into_view_if_needed()
     # Try select a selectable columnÖ
     select_column(canvas, 2)
