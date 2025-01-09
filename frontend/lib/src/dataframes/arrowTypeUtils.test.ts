@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+ * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { makeVector } from "apache-arrow"
 
 import { Quiver } from "@streamlit/lib/src/dataframes/Quiver"
 import {
@@ -33,14 +35,26 @@ import {
   UNICODE,
 } from "@streamlit/lib/src/mocks/arrow"
 
-import { getTypeName, IndexTypeName } from "./arrowTypeUtils"
+import {
+  convertVectorToList,
+  getTimezone,
+  getTypeName,
+  isBooleanType,
+  isDecimalType,
+  isFloatType,
+  isIntegerType,
+  isNumericType,
+  isUnsignedIntegerType,
+  PandasColumnType,
+  PandasIndexTypeName,
+} from "./arrowTypeUtils"
 
 describe("getTypeName", () => {
   describe("uses numpy_type", () => {
     test("period", () => {
       const mockElement = { data: PERIOD }
       const q = new Quiver(mockElement)
-      const dataType = q.types.data[0]
+      const dataType = q.columnTypes.data[0]
 
       expect(getTypeName(dataType)).toEqual("period[Y-DEC]")
     })
@@ -48,7 +62,7 @@ describe("getTypeName", () => {
     test("decimal", () => {
       const mockElement = { data: DECIMAL }
       const q = new Quiver(mockElement)
-      const firstColumnType = q.types.data[0]
+      const firstColumnType = q.columnTypes.data[0]
 
       expect(getTypeName(firstColumnType)).toEqual("decimal")
     })
@@ -56,7 +70,7 @@ describe("getTypeName", () => {
     test("timedelta", () => {
       const mockElement = { data: TIMEDELTA }
       const q = new Quiver(mockElement)
-      const firstColumnType = q.types.data[0]
+      const firstColumnType = q.columnTypes.data[0]
 
       expect(getTypeName(firstColumnType)).toEqual("timedelta64[ns]")
     })
@@ -64,7 +78,7 @@ describe("getTypeName", () => {
     test("dictionary", () => {
       const mockElement = { data: DICTIONARY }
       const q = new Quiver(mockElement)
-      const firstColumnType = q.types.data[0]
+      const firstColumnType = q.columnTypes.data[0]
 
       expect(getTypeName(firstColumnType)).toEqual("object")
     })
@@ -72,7 +86,7 @@ describe("getTypeName", () => {
     test("interval datetime64[ns]", () => {
       const mockElement = { data: INTERVAL_DATETIME64 }
       const q = new Quiver(mockElement)
-      const indexType = q.types.index[0]
+      const indexType = q.columnTypes.index[0]
 
       expect(getTypeName(indexType)).toEqual("interval[datetime64[ns], right]")
     })
@@ -80,7 +94,7 @@ describe("getTypeName", () => {
     test("interval float64", () => {
       const mockElement = { data: INTERVAL_FLOAT64 }
       const q = new Quiver(mockElement)
-      const indexType = q.types.index[0]
+      const indexType = q.columnTypes.index[0]
 
       expect(getTypeName(indexType)).toEqual("interval[float64, right]")
     })
@@ -88,7 +102,7 @@ describe("getTypeName", () => {
     test("interval int64", () => {
       const mockElement = { data: INTERVAL_INT64 }
       const q = new Quiver(mockElement)
-      const indexType = q.types.index[0]
+      const indexType = q.columnTypes.index[0]
 
       expect(getTypeName(indexType)).toEqual("interval[int64, right]")
     })
@@ -96,7 +110,7 @@ describe("getTypeName", () => {
     test("interval uint64", () => {
       const mockElement = { data: INTERVAL_UINT64 }
       const q = new Quiver(mockElement)
-      const indexType = q.types.index[0]
+      const indexType = q.columnTypes.index[0]
 
       expect(getTypeName(indexType)).toEqual("interval[uint64, right]")
     })
@@ -106,57 +120,433 @@ describe("getTypeName", () => {
     test("categorical", () => {
       const mockElement = { data: CATEGORICAL }
       const q = new Quiver(mockElement)
-      const indexType = q.types.index[0]
+      const indexType = q.columnTypes.index[0]
 
-      expect(getTypeName(indexType)).toEqual(IndexTypeName.CategoricalIndex)
+      expect(getTypeName(indexType)).toEqual(
+        PandasIndexTypeName.CategoricalIndex
+      )
     })
 
     test("date", () => {
       const mockElement = { data: DATE }
       const q = new Quiver(mockElement)
-      const indexType = q.types.index[0]
+      const indexType = q.columnTypes.index[0]
 
-      expect(getTypeName(indexType)).toEqual(IndexTypeName.DatetimeIndex)
+      expect(getTypeName(indexType)).toEqual(PandasIndexTypeName.DatetimeIndex)
     })
 
     test("float64", () => {
       const mockElement = { data: FLOAT64 }
       const q = new Quiver(mockElement)
-      const indexType = q.types.index[0]
+      const indexType = q.columnTypes.index[0]
 
-      expect(getTypeName(indexType)).toEqual(IndexTypeName.Float64Index)
+      expect(getTypeName(indexType)).toEqual(PandasIndexTypeName.Float64Index)
     })
 
     test("int64", () => {
       const mockElement = { data: INT64 }
       const q = new Quiver(mockElement)
-      const indexType = q.types.index[0]
+      const indexType = q.columnTypes.index[0]
 
-      expect(getTypeName(indexType)).toEqual(IndexTypeName.Int64Index)
+      expect(getTypeName(indexType)).toEqual(PandasIndexTypeName.Int64Index)
     })
 
     test("range", () => {
       const mockElement = { data: RANGE }
       const q = new Quiver(mockElement)
-      const indexType = q.types.index[0]
+      const indexType = q.columnTypes.index[0]
 
-      expect(getTypeName(indexType)).toEqual(IndexTypeName.RangeIndex)
+      expect(getTypeName(indexType)).toEqual(PandasIndexTypeName.RangeIndex)
     })
 
     test("uint64", () => {
       const mockElement = { data: UINT64 }
       const q = new Quiver(mockElement)
-      const indexType = q.types.index[0]
+      const indexType = q.columnTypes.index[0]
 
-      expect(getTypeName(indexType)).toEqual(IndexTypeName.UInt64Index)
+      expect(getTypeName(indexType)).toEqual(PandasIndexTypeName.UInt64Index)
     })
 
     test("unicode", () => {
       const mockElement = { data: UNICODE }
       const q = new Quiver(mockElement)
-      const indexType = q.types.index[0]
+      const indexType = q.columnTypes.index[0]
 
-      expect(getTypeName(indexType)).toEqual(IndexTypeName.UnicodeIndex)
+      expect(getTypeName(indexType)).toEqual(PandasIndexTypeName.UnicodeIndex)
     })
+  })
+})
+
+describe("isIntegerType", () => {
+  it.each([
+    [undefined, false],
+    [
+      {
+        pandas_type: "float64",
+        numpy_type: "float64",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "int64",
+        numpy_type: "int64",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "object",
+        numpy_type: "int16",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "range",
+        numpy_type: "range",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "uint64",
+        numpy_type: "uint64",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "unicode",
+        numpy_type: "object",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "bool",
+        numpy_type: "bool",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "categorical",
+        numpy_type: "int8",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "object",
+        numpy_type: "interval[int64, both]",
+      },
+      false,
+    ],
+  ])(
+    "interprets %s as integer type: %s",
+    (arrowType: PandasColumnType | undefined, expected: boolean) => {
+      expect(isIntegerType(arrowType)).toEqual(expected)
+    }
+  )
+})
+
+describe("isUnsignedIntegerType", () => {
+  it.each([
+    [undefined, false],
+    [
+      {
+        pandas_type: "float64",
+        numpy_type: "float64",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "int64",
+        numpy_type: "int64",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "uint64",
+        numpy_type: "uint64",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "object",
+        numpy_type: "uint16",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "unicode",
+        numpy_type: "object",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "bool",
+        numpy_type: "bool",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "categorical",
+        numpy_type: "uint8",
+      },
+      false,
+    ],
+  ])(
+    "interprets %s as unsigned integer type: %s",
+    (arrowType: PandasColumnType | undefined, expected: boolean) => {
+      expect(isUnsignedIntegerType(arrowType)).toEqual(expected)
+    }
+  )
+})
+
+describe("isBooleanType", () => {
+  it.each([
+    [undefined, false],
+    [
+      {
+        pandas_type: "bool",
+        numpy_type: "bool",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "object",
+        numpy_type: "bool",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "int64",
+        numpy_type: "int64",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "categorical",
+        numpy_type: "bool",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "float64",
+        numpy_type: "float64",
+      },
+      false,
+    ],
+  ])(
+    "interprets %s as boolean type: %s",
+    (arrowType: PandasColumnType | undefined, expected: boolean) => {
+      expect(isBooleanType(arrowType)).toEqual(expected)
+    }
+  )
+})
+
+describe("getTimezone", () => {
+  it.each([
+    [
+      {
+        pandas_type: "datetime",
+        numpy_type: "datetime64[ns]",
+        meta: { timezone: "UTC" },
+      },
+      "UTC",
+    ],
+    [
+      {
+        pandas_type: "datetime",
+        numpy_type: "datetime64[ns]",
+        meta: { timezone: "America/New_York" },
+      },
+      "America/New_York",
+    ],
+    [
+      {
+        pandas_type: "datetime",
+        numpy_type: "datetime64[ns]",
+        meta: {},
+      },
+      undefined,
+    ],
+    [
+      {
+        pandas_type: "datetime",
+        numpy_type: "datetime64[ns]",
+      },
+      undefined,
+    ],
+  ])(
+    "returns correct timezone for %o",
+    (arrowType: PandasColumnType, expected: string | undefined) => {
+      expect(getTimezone(arrowType)).toEqual(expected)
+    }
+  )
+})
+
+describe("isFloatType", () => {
+  it.each([
+    [undefined, false],
+    [
+      {
+        pandas_type: "float64",
+        numpy_type: "float64",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "object",
+        numpy_type: "float32",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "int64",
+        numpy_type: "int64",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "categorical",
+        numpy_type: "float64",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "bool",
+        numpy_type: "bool",
+      },
+      false,
+    ],
+  ])(
+    "interprets %s as float type: %s",
+    (arrowType: PandasColumnType | undefined, expected: boolean) => {
+      expect(isFloatType(arrowType)).toEqual(expected)
+    }
+  )
+})
+
+describe("isDecimalType", () => {
+  it.each([
+    [undefined, false],
+    [
+      {
+        pandas_type: "object",
+        numpy_type: "decimal",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "float64",
+        numpy_type: "float64",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "int64",
+        numpy_type: "int64",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "categorical",
+        numpy_type: "decimal",
+      },
+      false,
+    ],
+  ])(
+    "interprets %s as decimal type: %s",
+    (arrowType: PandasColumnType | undefined, expected: boolean) => {
+      expect(isDecimalType(arrowType)).toEqual(expected)
+    }
+  )
+})
+
+describe("isNumericType", () => {
+  it.each([
+    [undefined, false],
+    [
+      {
+        pandas_type: "float64",
+        numpy_type: "float64",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "int64",
+        numpy_type: "int64",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "object",
+        numpy_type: "decimal",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "uint64",
+        numpy_type: "uint64",
+      },
+      true,
+    ],
+    [
+      {
+        pandas_type: "bool",
+        numpy_type: "bool",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "categorical",
+        numpy_type: "float64",
+      },
+      false,
+    ],
+    [
+      {
+        pandas_type: "unicode",
+        numpy_type: "object",
+      },
+      false,
+    ],
+  ])(
+    "interprets %s as numeric type: %s",
+    (arrowType: PandasColumnType | undefined, expected: boolean) => {
+      expect(isNumericType(arrowType)).toEqual(expected)
+    }
+  )
+})
+
+describe("convertVectorToList", () => {
+  it("converts vector to list", () => {
+    const vector = makeVector(Int32Array.from([1, 2, 3]))
+    const expected = [1, 2, 3]
+    expect(convertVectorToList(vector)).toEqual(expected)
   })
 })

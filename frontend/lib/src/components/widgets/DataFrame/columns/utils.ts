@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+ * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,11 @@ import "moment-timezone"
 import numbro from "numbro"
 import { sprintf } from "sprintf-js"
 
-import { formatPeriodType } from "@streamlit/lib/src/dataframes/arrowFormatUtils"
-import { Type as ArrowType } from "@streamlit/lib/src/dataframes/arrowTypeUtils"
+import {
+  formatPeriodFromFreq,
+  PandasPeriodFrequency,
+} from "@streamlit/lib/src/dataframes/arrowFormatUtils"
+import { PandasColumnType as ArrowType } from "@streamlit/lib/src/dataframes/arrowTypeUtils"
 import { EmotionTheme } from "@streamlit/lib/src/theme"
 import {
   isNullOrUndefined,
@@ -499,7 +502,13 @@ export function formatNumber(
   } else if (format === "duration[ns]") {
     return moment.duration(value / (1000 * 1000), "milliseconds").humanize()
   } else if (format.startsWith("period[")) {
-    return formatPeriodType(BigInt(value), format as any)
+    const match = format.match(/period\[(.*)]/)
+    if (match === null) {
+      return String(value)
+    }
+    const [, freq] = match
+
+    return formatPeriodFromFreq(value, freq as PandasPeriodFrequency)
   }
 
   return sprintf(format, value)

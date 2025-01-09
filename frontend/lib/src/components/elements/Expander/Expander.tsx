@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+ * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -232,7 +232,12 @@ const Expander: React.FC<React.PropsWithChildren<ExpanderProps>> = ({
   return (
     <StyledExpandableContainer className="stExpander" data-testid="stExpander">
       <StyledDetails isStale={isStale} ref={detailsRef}>
-        <StyledSummary onClick={toggle} empty={empty} ref={summaryRef}>
+        <StyledSummary
+          onClick={toggle}
+          empty={empty}
+          ref={summaryRef}
+          isStale={isStale}
+        >
           <StyledSummaryHeading>
             {element.icon && <ExpanderIcon icon={element.icon} />}
             <StreamlitMarkdown source={label} allowHTML={false} isLabel />
