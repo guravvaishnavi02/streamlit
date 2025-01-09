@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Final, cast
 from streamlit.proto.Markdown_pb2 import Markdown as MarkdownProto
 from streamlit.runtime.metrics_util import gather_metrics
 from streamlit.string_util import clean_text
-from streamlit.type_util import SupportsStr, is_sympy_expession
+from streamlit.type_util import SupportsStr, is_sympy_expression
 
 if TYPE_CHECKING:
     import sympy
@@ -261,7 +261,7 @@ class MarkdownMixin:
         ...     ''')
 
         """
-        if is_sympy_expession(body):
+        if is_sympy_expression(body):
             import sympy
 
             body = sympy.latex(body)

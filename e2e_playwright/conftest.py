@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ from playwright.sync_api import (
 )
 from pytest import FixtureRequest
 
+from e2e_playwright.shared.git_utils import get_git_root
 from e2e_playwright.shared.performance import (
     is_supported_browser,
     measure_performance,
@@ -227,9 +228,17 @@ def app_port(worker_id: str) -> int:
     return find_available_port()
 
 
+@pytest.fixture(scope="module")
+def app_server_extra_args() -> list[str]:
+    """Fixture that returns extra arguments to pass to the Streamlit app server."""
+    return []
+
+
 @pytest.fixture(scope="module", autouse=True)
 def app_server(
-    app_port: int, request: FixtureRequest
+    app_port: int,
+    app_server_extra_args: list[str],
+    request: FixtureRequest,
 ) -> Generator[AsyncSubprocess, None, None]:
     """Fixture that starts and stops the Streamlit app server."""
     streamlit_proc = AsyncSubprocess(
@@ -251,6 +260,7 @@ def app_server(
             "none",
             "--server.enableStaticServing",
             "true",
+            *app_server_extra_args,
         ],
         cwd=".",
     )
@@ -570,7 +580,9 @@ def output_folder(pytestconfig: Any) -> Path:
     - snapshot-updates: This directory contains all the snapshots that got updated in
     the current run based on folder structure used in the main snapshots folder.
     """
-    return Path(pytestconfig.getoption("--output")).resolve()
+    return Path(
+        get_git_root() / "e2e_playwright" / pytestconfig.getoption("--output")
+    ).resolve()
 
 
 @pytest.fixture(scope="function")
@@ -578,12 +590,14 @@ def assert_snapshot(
     request: FixtureRequest, output_folder: Path
 ) -> Generator[ImageCompareFunction, None, None]:
     """Fixture that compares a screenshot with screenshot from a past run."""
-    root_path = Path(os.getcwd()).resolve()
+    root_path = get_git_root()
     platform = str(sys.platform)
     module_name = request.module.__name__.split(".")[-1]
     test_function_name = request.node.originalname
 
-    snapshot_dir: Path = root_path / "__snapshots__" / platform / module_name
+    snapshot_dir: Path = (
+        root_path / "e2e_playwright" / "__snapshots__" / platform / module_name
+    )
 
     module_snapshot_failures_dir: Path = (
         output_folder / "snapshot-tests-failures" / platform / module_name

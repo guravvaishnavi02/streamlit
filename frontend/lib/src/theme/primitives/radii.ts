@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+ * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ export const radii = {
   default: "0.5rem",
   xl: "0.75rem",
   xxl: "1rem",
+  xxxl: "1.25rem",
   // Ensures that the element is fully rounded:
   full: "9999px",
 }

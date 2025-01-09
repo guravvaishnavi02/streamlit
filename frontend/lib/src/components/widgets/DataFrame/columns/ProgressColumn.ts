@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+ * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ import {
 } from "@glideapps/glide-data-grid"
 import { RangeCellType } from "@glideapps/glide-data-grid-cells"
 
-import { isIntegerType } from "@streamlit/lib/src/components/widgets/DataFrame/isIntegerType"
-import { getTypeName } from "@streamlit/lib/src/dataframes/arrowTypeUtils"
+import { isIntegerType } from "@streamlit/lib/src/dataframes/arrowTypeUtils"
 import {
   isNullOrUndefined,
   notNullOrUndefined,
@@ -59,8 +58,7 @@ export interface ProgressColumnParams {
  * range. This is rendered via a progress-bar-like visualization.
  */
 function ProgressColumn(props: BaseColumnProps): BaseColumn {
-  const arrowTypeName = getTypeName(props.arrowType)
-  const isInteger = isIntegerType(arrowTypeName)
+  const isInteger = isIntegerType(props.arrowType)
 
   const parameters = mergeColumnParameters(
     // Default parameters:

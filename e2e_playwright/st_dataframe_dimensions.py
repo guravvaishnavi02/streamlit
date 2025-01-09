@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,3 +38,8 @@ st.dataframe(small_df, width=200, use_container_width=False)
 
 one_col_df = pd.DataFrame(np.random.randn(100, 1))
 st.dataframe(one_col_df, use_container_width=True)
+
+if st.button("Resize dataframe"):
+    st.dataframe(small_df, width=400, height=200)
+else:
+    st.dataframe(small_df, width=200, height=100)

@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -159,9 +159,16 @@ class AudioInputMixin:
         Returns
         -------
         None or UploadedFile
-            The UploadedFile class is a subclass of BytesIO, and therefore is
-            "file-like". This means you can pass an instance of it anywhere a
-            file is expected. The MIME type for the audio data is ``audio/wav``.
+            The ``UploadedFile`` class is a subclass of ``BytesIO``, and
+            therefore is "file-like". This means you can pass an instance of it
+            anywhere a file is expected. The MIME type for the audio data is
+            ``audio/wav``.
+
+            .. Note::
+                The resulting ``UploadedFile`` is subject to the size
+                limitation configured in ``server.maxUploadSize``. If you
+                expect large sound files, update the configuration option
+                appropriately.
 
         Examples
         --------

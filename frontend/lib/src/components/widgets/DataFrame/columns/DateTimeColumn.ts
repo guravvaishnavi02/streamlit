@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+ * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import { GridCell, GridCellKind } from "@glideapps/glide-data-grid"
 import { DatePickerType } from "@glideapps/glide-data-grid-cells"
 import moment, { Moment } from "moment-timezone"
 
+import { getTimezone } from "@streamlit/lib/src/dataframes/arrowTypeUtils"
 import {
   isNullOrUndefined,
   notNullOrUndefined,
@@ -220,7 +221,7 @@ function BaseDateTimeColumn(
           // The moment date should never be invalid here.
           return getErrorCell(
             toSafeString(cellData),
-            `This should never happen. Please report this bug. \nError: ${momentDate.toString()}`
+            `Invalid moment date. This should never happen. Please report this bug. \nError: ${momentDate.toString()}`
           )
         }
 
@@ -288,7 +289,7 @@ export default function DateTimeColumn(props: BaseColumnProps): BaseColumn {
     defaultFormat = "YYYY-MM-DD HH:mm:ss.SSS"
   }
 
-  const timezone: string | undefined = props.arrowType?.meta?.timezone
+  const timezone = getTimezone(props.arrowType)
   const hasTimezone: boolean =
     notNullOrUndefined(timezone) ||
     // Timezone can also be configure by the user:

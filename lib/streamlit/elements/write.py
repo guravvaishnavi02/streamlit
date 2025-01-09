@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -452,7 +452,7 @@ class WriteMixin:
             elif type_util.is_graphviz_chart(arg):
                 flush_buffer()
                 self.dg.graphviz_chart(arg)
-            elif type_util.is_sympy_expession(arg):
+            elif type_util.is_sympy_expression(arg):
                 flush_buffer()
                 self.dg.latex(arg)
             elif type_util.is_pillow_image(arg):

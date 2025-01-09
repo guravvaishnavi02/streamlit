@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ if not (major == "4" and minor < "2"):
     )
 
     st.write("Pie Chart with more than 4 Legend items")
-    st.altair_chart(chart, theme="streamlit")
+    st.altair_chart(chart, theme="streamlit", use_container_width=False)
 
 # taken from vega_datasets barley example
 barley = alt.UrlData(
@@ -87,7 +87,9 @@ st.altair_chart(barley_chart, theme=None)
 st.write("Grouped Bar Chart with streamlit theme:")
 st.altair_chart(barley_chart, theme="streamlit")
 
-st.write("Chart with use_container_width used")
+st.write(
+    "Grouped Bar Chart with use_container_width=True (note that this doesn't work well)"
+)
 st.altair_chart(barley_chart, theme=None, use_container_width=True)
 
 st.write("Layered chart")

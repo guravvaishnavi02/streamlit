@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+ * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import styled from "@emotion/styled"
 
 import { StyledCheckbox } from "@streamlit/lib/src/components/widgets/Checkbox/styled-components"
 import { Block as BlockProto } from "@streamlit/lib/src/proto"
-import { EmotionTheme } from "@streamlit/lib/src/theme"
+import { EmotionTheme, STALE_STYLES } from "@streamlit/lib/src/theme"
 
 function translateGapWidth(gap: string, theme: EmotionTheme): string {
   let gapWidth = theme.spacing.lg
@@ -87,12 +87,7 @@ export const StyledElementContainer = styled.div<StyledElementContainerProps>(
       marginBottom: `-${theme.spacing.xs}`,
     },
 
-    ...(isStale && elementType !== "skeleton"
-      ? {
-          opacity: 0.33,
-          transition: "opacity 1s ease-in 0.5s",
-        }
-      : {}),
+    ...(isStale && elementType !== "skeleton" && STALE_STYLES),
     ...(elementType === "empty"
       ? {
           // Use display: none for empty elements to avoid the flexbox gap.

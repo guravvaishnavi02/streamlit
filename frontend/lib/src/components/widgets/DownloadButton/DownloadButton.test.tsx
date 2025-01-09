@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+ * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 import React from "react"
 
-import { fireEvent, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
+import { userEvent } from "@testing-library/user-event"
 
 import { render } from "@streamlit/lib/src/test_util"
 import { WidgetStateManager } from "@streamlit/lib/src/WidgetStateManager"
@@ -79,15 +80,13 @@ describe("DownloadButton widget", () => {
   })
 
   describe("wrapped BaseButton", () => {
-    it("sets widget triggerValue and creates a download URL on click", () => {
+    it("sets widget triggerValue and creates a download URL on click", async () => {
+      const user = userEvent.setup()
       const props = getProps()
       render(<DownloadButton {...props} />)
 
       const downloadButton = screen.getByRole("button")
-
-      // TODO: Utilize user-event instead of fireEvent
-      // eslint-disable-next-line testing-library/prefer-user-event
-      fireEvent.click(downloadButton)
+      await user.click(downloadButton)
 
       expect(props.widgetMgr.setTriggerValue).toHaveBeenCalledWith(
         props.element,
@@ -117,14 +116,13 @@ describe("DownloadButton widget", () => {
       expect(newTabLink.getAttribute("target")).toBe("_blank")
     })
 
-    it("can set fragmentId on click", () => {
+    it("can set fragmentId on click", async () => {
+      const user = userEvent.setup()
       const props = getProps(undefined, { fragmentId: "myFragmentId" })
       render(<DownloadButton {...props} />)
 
       const downloadButton = screen.getByRole("button")
-      // TODO: Utilize user-event instead of fireEvent
-      // eslint-disable-next-line testing-library/prefer-user-event
-      fireEvent.click(downloadButton)
+      await user.click(downloadButton)
 
       expect(props.widgetMgr.setTriggerValue).toHaveBeenCalledWith(
         props.element,

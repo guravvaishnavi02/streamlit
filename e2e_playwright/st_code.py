@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -68,3 +68,30 @@ st.code(wide_code_block, wrap_lines=False)
 st.code(wide_code_block, wrap_lines=False, line_numbers=True)
 st.code(wide_code_block, wrap_lines=True)
 st.code(wide_code_block, wrap_lines=True, line_numbers=True)
+
+
+long_code = """
+print("Hello!")
+print("This is a tall code block")
+print("With many lines")
+print("That will scroll")
+print("Hello!")
+print("This is a tall code block")
+print("With many lines")
+print("That will scroll")
+print("Hello!")
+print("This is a tall code block")
+print("With many lines")
+print("That will scroll")
+print("Hello!")
+print("This is a tall code block")
+print("With many lines")
+print("That will scroll")
+print("Hello!")
+print("This is a tall code block")
+print("With many lines")
+print("That will scroll")
+"""
+
+st.code(long_code, height=200)
+st.code(code, height=200)

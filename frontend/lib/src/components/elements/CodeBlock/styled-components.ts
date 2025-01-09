@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+ * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,13 +59,18 @@ export const StyledCode = styled.code(({ theme }) => ({
   ...codeBlockStyle(theme),
 }))
 
+interface StyledPreProps {
+  height?: number
+}
+
 /*
   This is the default prism.js theme for JavaScript, CSS and HTML, but
   stripped of everything except for token styling.
 
   See https://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javascript
 */
-export const StyledPre = styled.pre(({ theme }) => ({
+export const StyledPre = styled.pre<StyledPreProps>(({ theme, height }) => ({
+  height: height ? `${height}px` : undefined,
   background: theme.colors.codeHighlightColor,
   borderRadius: theme.radii.default,
   color: theme.colors.bodyText,
@@ -80,7 +85,8 @@ export const StyledPre = styled.pre(({ theme }) => ({
 
   // Don't allow content to break outside
   overflow: "auto",
-  // Add padding
+
+  // Add padding around the code
   padding: theme.spacing.lg,
   // Add padding to the right to account for the copy button
   paddingRight: theme.iconSizes.threeXL,

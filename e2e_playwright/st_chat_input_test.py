@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -97,6 +97,19 @@ def test_app_with_bottom_chat_input(app: Page, assert_snapshot: ImageCompareFunc
     expect(app.get_by_test_id("stAppScrollToBottomContainer")).to_be_attached()
 
     assert_snapshot(app.get_by_test_id("stBottom"), name="st_chat_input-app_bottom")
+
+
+def test_submit_hover_state_with_input_value(
+    app: Page, assert_snapshot: ImageCompareFunction
+):
+    """Test the submit button's hover state when input value is present."""
+    chat_input = app.get_by_test_id("stChatInput").nth(3)
+    chat_input_area = chat_input.locator("textarea")
+    chat_input_area.type("Corgi")
+
+    submit_button = chat_input.get_by_test_id("stChatInputSubmitButton")
+    submit_button.hover()
+    assert_snapshot(chat_input, name="st_chat_input-submit_hover")
 
 
 def test_enter_submits_clears_input(app: Page):

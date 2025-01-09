@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+ * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { ReactElement, useMemo } from "react"
+import React, { ReactElement } from "react"
 
 import {
   CompactSelection,
@@ -42,17 +42,20 @@ import {
   WidgetInfo,
   WidgetStateManager,
 } from "@streamlit/lib/src/WidgetStateManager"
-import { debounce, isNullOrUndefined } from "@streamlit/lib/src/util/utils"
+import { isNullOrUndefined } from "@streamlit/lib/src/util/utils"
 import Toolbar, {
   ToolbarAction,
 } from "@streamlit/lib/src/components/shared/Toolbar"
 import { LibContext } from "@streamlit/lib/src/components/core/LibContext"
 import { ElementFullscreenContext } from "@streamlit/lib/src/components/shared/ElementFullscreen/ElementFullscreenContext"
 import { useRequiredContext } from "@streamlit/lib/src/hooks/useRequiredContext"
+import { useDebouncedCallback } from "@streamlit/lib/src/hooks/useDebouncedCallback"
 
 import EditingState, { getColumnName } from "./EditingState"
 import {
   useColumnLoader,
+  useColumnPinning,
+  useColumnReordering,
   useColumnSizer,
   useColumnSort,
   useCustomRenderer,
@@ -60,16 +63,12 @@ import {
   useDataEditor,
   useDataExporter,
   useDataLoader,
+  useRowHover,
   useSelectionHandler,
   useTableSizer,
   useTooltips,
 } from "./hooks"
-import {
-  BaseColumn,
-  getTextCell,
-  ImageCellEditor,
-  toGlideColumn,
-} from "./columns"
+import { getTextCell, ImageCellEditor, toGlideColumn } from "./columns"
 import Tooltip from "./Tooltip"
 import { StyledResizableContainer } from "./styled-components"
 
@@ -138,6 +137,9 @@ function DataFrame({
   const resizableContainerRef = React.useRef<HTMLDivElement>(null)
 
   const gridTheme = useCustomTheme()
+
+  const { getRowThemeOverride, onItemHovered: handleRowHover } =
+    useRowHover(gridTheme)
 
   const {
     libConfig: { enforceDownloadInNewTab = false }, // Default to false, if no libConfig, e.g. for tests
@@ -209,7 +211,14 @@ function DataFrame({
     setNumRows(editingState.current.getNumRows())
   }, [originalNumRows])
 
-  const { columns: originalColumns } = useColumnLoader(element, data, disabled)
+  const [columnOrder, setColumnOrder] = React.useState(element.columnOrder)
+
+  const { columns: originalColumns, setColumnConfigMapping } = useColumnLoader(
+    element,
+    data,
+    disabled,
+    columnOrder
+  )
 
   /**
    * On the first rendering, try to load initial widget state if
@@ -260,20 +269,16 @@ function DataFrame({
     useColumnSort(originalNumRows, originalColumns, getOriginalCellContent)
 
   /**
-   * This callback is used to synchronize the selection state with the state
-   * of the widget state of the component. This might also send a rerun message
-   * to the backend if the selection state has changed.
+   * Synchronizes the selection state with the state of the widget state of the component.
+   * This might also send a rerun message to the backend if the selection state has changed.
+   *
+   * This is the inner version to be used by the debounce callback below.
+   * Its split out to allow better dependency inspection.
    *
    * @param newSelection - The new selection state
    */
-  // The debounce method doesn't allow dependency inspection. Therefore, we
-  // need to disable the eslint rule for exhaustive-deps.
-  // TODO: Update to match React best practices
-  // eslint-disable-next-line react-compiler/react-compiler
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const syncSelectionState = React.useCallback(
-    // Use debounce to prevent rapid updates to the widget state.
-    debounce(DEBOUNCE_TIME_MS, (newSelection: GridSelection) => {
+  const innerSyncSelectionState = React.useCallback(
+    (newSelection: GridSelection) => {
       // If we want to support selections also with the editable mode,
       // we would need to integrate the `syncEditState` and `syncSelections` functions
       // into a single function that updates the widget state with both the editing
@@ -317,15 +322,21 @@ function DataFrame({
           fragmentId
         )
       }
-    }),
+    },
     [
+      columns,
       element.id,
       element.formId,
       widgetMgr,
       fragmentId,
       getOriginalIndex,
-      getColumnName,
     ]
+  )
+
+  // Use a debounce to prevent rapid updates to the widget state.
+  const { debouncedCallback: syncSelectionState } = useDebouncedCallback(
+    innerSyncSelectionState,
+    DEBOUNCE_TIME_MS
   )
 
   const {
@@ -445,49 +456,42 @@ function DataFrame({
    * This callback is used to synchronize the editing state with
    * the widget state of the component. This might also send a rerun message
    * to the backend if the editing state has changed.
+   *
+   * This is the inner version to be used by the debounce callback below.
+   * Its split out to allow better dependency inspection.
    */
-  // The debounce method doesn't allow dependency inspection. Therefore, we
-  // need to disable the eslint rule for exhaustive-deps.
-  // TODO: Update to match React best practices
-  // eslint-disable-next-line react-compiler/react-compiler
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const syncEditState = React.useCallback(
-    // Use debounce to prevent rapid updates to the widget state.
-    debounce(DEBOUNCE_TIME_MS, () => {
-      const currentEditingState = editingState.current.toJson(columns)
-      let currentWidgetState = widgetMgr.getStringValue({
-        id: element.id,
-        formId: element.formId,
-      } as WidgetInfo)
+  const innerSyncEditState = React.useCallback(() => {
+    const currentEditingState = editingState.current.toJson(columns)
+    let currentWidgetState = widgetMgr.getStringValue({
+      id: element.id,
+      formId: element.formId,
+    } as WidgetInfo)
 
-      if (currentWidgetState === undefined) {
-        // Create an empty widget state
-        currentWidgetState = new EditingState(0).toJson([])
-      }
+    if (currentWidgetState === undefined) {
+      // Create an empty widget state
+      currentWidgetState = new EditingState(0).toJson([])
+    }
 
-      // Only update if there is actually a difference between editing and widget state
-      if (currentEditingState !== currentWidgetState) {
-        widgetMgr.setStringValue(
-          {
-            id: element.id,
-            formId: element.formId,
-          } as WidgetInfo,
-          currentEditingState,
-          {
-            fromUi: true,
-          },
-          fragmentId
-        )
-      }
-    }),
-    [
-      element.id,
-      element.formId,
-      widgetMgr,
-      fragmentId,
-      columns,
-      editingState.current,
-    ]
+    // Only update if there is actually a difference between editing and widget state
+    if (currentEditingState !== currentWidgetState) {
+      widgetMgr.setStringValue(
+        {
+          id: element.id,
+          formId: element.formId,
+        } as WidgetInfo,
+        currentEditingState,
+        {
+          fromUi: true,
+        },
+        fragmentId
+      )
+    }
+  }, [columns, element.id, element.formId, widgetMgr, fragmentId])
+
+  // Use a debounce to prevent rapid updates to the widget state.
+  const { debouncedCallback: syncEditState } = useDebouncedCallback(
+    innerSyncEditState,
+    DEBOUNCE_TIME_MS
   )
 
   const { exportToCsv } = useDataExporter(
@@ -510,10 +514,11 @@ function DataFrame({
       clearSelection
     )
 
-  const { tooltip, clearTooltip, onItemHovered } = useTooltips(
-    columns,
-    getCellContent
-  )
+  const {
+    tooltip,
+    clearTooltip,
+    onItemHovered: handleTooltips,
+  } = useTooltips(columns, getCellContent)
 
   const { drawCell, customRenderers } = useCustomRenderer(columns)
 
@@ -575,30 +580,22 @@ function DataFrame({
   const isDynamicAndEditable =
     !isEmptyTable && element.editingMode === DYNAMIC && !disabled
 
-  // This is a simple heuristic to prevent the pinned columns
-  // from taking up too much space and prevent horizontal scrolling.
-  // Since its not easy to determine the current width of auto-sized columns,
-  // we just use 2x of the min column width as a fallback.
-  // The combined width of all pinned columns should not exceed 60%
-  // of the container width.
-  const isPinnedColumnsWidthTooLarge = useMemo(() => {
-    return (
-      columns
-        .filter((col: BaseColumn) => col.isPinned)
-        .reduce(
-          (acc, col) => acc + (col.width ?? gridTheme.minColumnWidth * 2),
-          0
-        ) >
-      containerWidth * 0.6
-    )
-  }, [columns, containerWidth, gridTheme.minColumnWidth])
+  const { pinColumn, unpinColumn, freezeColumns } = useColumnPinning(
+    columns,
+    isEmptyTable,
+    containerWidth,
+    gridTheme.minColumnWidth,
+    clearSelection,
+    setColumnConfigMapping
+  )
 
-  // All pinned columns are expected to be moved to the beginning
-  // in useColumnLoader. So we can just count all pinned columns here.
-  const freezeColumns =
-    isEmptyTable || isPinnedColumnsWidthTooLarge
-      ? 0
-      : columns.filter((col: BaseColumn) => col.isPinned).length
+  const { onColumnMoved } = useColumnReordering(
+    columns,
+    freezeColumns,
+    pinColumn,
+    unpinColumn,
+    setColumnOrder
+  )
 
   // Determine if the table requires horizontal or vertical scrolling:
   React.useEffect(() => {
@@ -827,8 +824,16 @@ function DataFrame({
           rangeSelect={isTouchDevice ? "cell" : "rect"}
           columnSelect={"none"}
           rowSelect={"none"}
-          // Enable tooltips on hover of a cell or column header:
-          onItemHovered={onItemHovered}
+          // Enable interactive column reordering:
+          onColumnMoved={
+            // Column selection is not compatible with column reordering.
+            isColumnSelectionActivated ? undefined : onColumnMoved
+          }
+          // Enable tooltips and row hovering theme on hover of a cell or column header:
+          onItemHovered={(args: GridMouseEventArgs) => {
+            handleRowHover?.(args)
+            handleTooltips?.(args)
+          }}
           // Activate keybindings:
           keybindings={{ downFill: true }}
           // Search needs to be activated manually, to support search
@@ -883,6 +888,7 @@ function DataFrame({
             }
           }}
           theme={gridTheme.glideTheme}
+          getRowThemeOverride={getRowThemeOverride}
           onMouseMove={(args: GridMouseEventArgs) => {
             // Determine if the dataframe is focused or not
             if (args.kind === "out-of-bounds" && isFocused) {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+ * Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 import { GridCellKind, TextCell } from "@glideapps/glide-data-grid"
 
 import TextColumn from "./TextColumn"
-import { isErrorCell } from "./utils"
+import { ErrorCell, isErrorCell } from "./utils"
 
 const MOCK_TEXT_COLUMN_PROPS = {
   id: "1",
@@ -138,7 +138,11 @@ describe("TextColumn", () => {
 
     const cell = mockColumn.getCell("test", true)
     expect(isErrorCell(cell)).toEqual(true)
-    expect((cell as TextCell).data).toContain("Invalid validate regex")
+    // Data should contain the initial raw data
+    expect((cell as ErrorCell).data).toContain("test")
+    expect((cell as ErrorCell).errorDetails).toContain(
+      "Invalid validate regex"
+    )
   })
 
   it("ignores empty validate", () => {

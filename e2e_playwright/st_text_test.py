@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,10 @@ from playwright.sync_api import Page, expect
 
 from e2e_playwright.conftest import ImageCompareFunction
 from e2e_playwright.shared.app_utils import check_top_level_class, expect_help_tooltip
+
+
+def test_st_text_rendering(app: Page, assert_snapshot: ImageCompareFunction):
+    assert_snapshot(app.get_by_test_id("stVerticalBlock"), name="st_text-rendering")
 
 
 def test_st_text_shows_correct_text(app: Page):
@@ -43,7 +47,7 @@ def test_multiline_text(app: Page):
 
     # check that the text is displayed as multiline with its div's height > width
     bounding_box = multiline_text.locator("div").bounding_box()
-    assert bounding_box["height"] > bounding_box["width"]
+    assert bounding_box is not None and bounding_box["height"] > bounding_box["width"]
 
 
 def test_singleline_text_with_escape_char(app: Page):

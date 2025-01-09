@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,10 @@ import streamlit as st
 
 # A spinner always requires a computation to run for a certain time
 # Therefore, we add a button to allow triggering the spinner during the test execution.
-if st.button("Run Spinner"):
+if st.button("Run spinner basic"):
     with st.spinner("Loading..."):
+        time.sleep(2)
+
+if st.button("Run spinner with time"):
+    with st.spinner("Loading...", show_time=True):
         time.sleep(2)
