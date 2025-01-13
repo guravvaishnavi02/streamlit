@@ -48,7 +48,7 @@ jobs:
         run: make frontend-build-with-profiler
       - name: Run make playwright-performance
         run: make playwright-performance
-      - name: Run performance-pytest
+      - name: Run make performance-pytest
         run: make performance-pytest
       - name: Upload failed test results
         uses: actions/upload-artifact@v4
@@ -67,4 +67,5 @@ jobs:
         if: always()
         with:
           name: performance_pytest_results
+          include-hidden-files: true
           path: lib/.benchmarks
