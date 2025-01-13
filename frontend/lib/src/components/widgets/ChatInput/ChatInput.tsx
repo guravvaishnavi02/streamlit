@@ -72,6 +72,7 @@ import {
   StyledSendIconButtonContainer,
   StyledVerticalDivider,
 } from "./styled-components"
+import { fi } from "date-fns/locale"
 
 export interface Props {
   disabled: boolean
@@ -253,6 +254,9 @@ function ChatInput({
   // The value of the height of the textarea. It depends on a variety of factors including the default height, and autogrowing
   const [scrollHeight, setScrollHeight] = useState(0)
   const [files, setFiles] = useState<UploadFileInfo[]>([])
+
+  const [placeholder, setPlaceholder] = useState(element.placeholder)
+  const [fileDragged, setFileDragged] = useState(false)
 
   const acceptFile = chatInputAcceptFileProtoValueToEnum(element.acceptFile)
   const addFiles = (filesToAdd: UploadFileInfo[]): void => {
@@ -499,7 +503,40 @@ function ChatInput({
     }
   }, [chatInputRef])
 
-  const { disabled, placeholder, maxChars } = element
+  useEffect(() => {
+    const handleDragOver = (event: DragEvent) => {
+      event.preventDefault()
+      if (!fileDragged) {
+        console.log("hello file")
+        setFileDragged(true)
+        setPlaceholder("Drop file here")
+      }
+    }
+
+    const handleDragLeave = () => {
+      if (fileDragged) {
+        setFileDragged(false)
+        setPlaceholder(element.placeholder)
+      }
+    }
+
+    const handleDrop = (event: DragEvent) => {
+      event.preventDefault()
+      handleDragLeave()
+    }
+
+    window.addEventListener("dragover", handleDragOver)
+    window.addEventListener("drop", handleDrop)
+    window.addEventListener("dragleave", handleDragLeave)
+
+    return () => {
+      window.removeEventListener("dragover", handleDragOver)
+      window.removeEventListener("drop", handleDrop)
+      window.removeEventListener("dragleave", handleDragLeave)
+    }
+  }, [fileDragged])
+
+  const { disabled, maxChars } = element
   const { minHeight, maxHeight } = heightGuidance.current
 
   const isInputExtended =
