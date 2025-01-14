@@ -15,11 +15,10 @@
  */
 import styled from "@emotion/styled"
 
+import { Theme } from "@emotion/react"
 import { hasLightBackgroundColor } from "@streamlit/lib/src/theme"
 
-import { Theme } from "@emotion/react"
-
-const chatBorderRadius = (theme: Theme) => theme.radii.xxxl
+const chatBorderRadius = (theme: Theme): string => theme.radii.xxxl
 
 export interface StyledChatInputContainerProps {
   width: number
@@ -43,7 +42,7 @@ export const StyledChatInputContainer =
     }
   })
 
-export const StyledChatInput = styled.div(({ theme }) => {
+export const StyledChatInput = styled.div(({}) => {
   return {
     position: "relative",
     flexGrow: 1,
