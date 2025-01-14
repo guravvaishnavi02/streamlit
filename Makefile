@@ -158,6 +158,7 @@ performance-pytest:
 			-l tests/ \
 			-m "performance" \
 			--benchmark-autosave \
+			--benchmark-storage file://../.benchmarks/pytest \
 			$(PYTHON_MODULES)
 
 # Run Python integration tests.
@@ -363,8 +364,8 @@ playwright:
 	rm -rf ./test-results; \
 	pytest --ignore ${custom_components_test_folder} --browser webkit --browser chromium --browser firefox --video retain-on-failure --screenshot only-on-failure --output ./test-results/ -n auto --reruns 1 --reruns-delay 1 --rerun-except "Missing snapshot" --durations=5 -r aR -v -m "not performance"
 
-.PHONY: playwright-performance
-playwright-performance:
+.PHONY: performance-playwright
+performance-playwright:
 	cd e2e_playwright; \
 	rm -rf ./test-results; \
 	pytest --browser chromium --output ./test-results/ -n 1 --reruns 1 --reruns-delay 1 --rerun-except "Missing snapshot" --durations=5 -r aR -v -m "performance" --count=10
