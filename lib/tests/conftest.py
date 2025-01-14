@@ -120,9 +120,8 @@ def pytest_runtest_setup(item: pytest.Item):
 
 def pytest_collection_modifyitems(config, items):
     """
-    Adds the `@pytest.mark.performance` marker to tests that use the
-    `performance` fixture. This marker allows us to run only performance tests
-    when needed.
+    Adds the `@pytest.mark.benchmark` marker to tests that use the `benchmark`
+    fixture. This marker allows us to run only performance tests when needed.
     """
     for item in items:
         markers = item.get_closest_marker("usefixtures")
