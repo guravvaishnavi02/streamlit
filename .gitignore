@@ -128,5 +128,5 @@ frontend/cypress/snapshots/linux/1x
 
 .swc/
 
-# pytest-benchmark
+# Performance suite output
 **/.benchmarks/
