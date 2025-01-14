@@ -46,20 +46,14 @@ jobs:
         run: python -m playwright install --with-deps
       - name: Run make frontend-build-with-profiler
         run: make frontend-build-with-profiler
-      - name: Run make playwright-performance
-        run: make playwright-performance
+      - name: Run make performance-playwright
+        run: make performance-playwright
       - name: Run make performance-pytest
         run: make performance-pytest
-      - name: Run Performance Lighthouse
+      - name: Run make performance-lighthouse
         run: make performance-lighthouse
       - name: Set MY_DATE_TIME env var
         run: echo "MY_DATE_TIME=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: performance_lighthouse_${{ env.MY_DATE_TIME }}
-          path: frontend/app/performance/lighthouse/reports
-
       - name: Upload failed test results
         uses: actions/upload-artifact@v4
         if: always()
