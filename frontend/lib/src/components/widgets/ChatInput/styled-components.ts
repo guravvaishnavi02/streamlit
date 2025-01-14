@@ -34,6 +34,7 @@ export const StyledChatInputContainer =
         backgroundColor:
           theme.colors.widgetBackgroundColor ?? theme.colors.secondaryBg,
         width: `${width}px`,
+        // pointerEvents: "none",
       }
     }
   )
@@ -140,6 +141,24 @@ export const StyledVerticalDivider = styled.div<StyledVerticalDividerProps>(
       width: theme.sizes.borderWidth,
       marginRight: theme.spacing.xs,
       backgroundColor: color ?? theme.colors.fadedText20,
+    }
+  }
+)
+
+export interface StyledDropOverlayProps {
+  showOnlyDropzone: boolean
+}
+
+export const StyledDropOverlay = styled.div<StyledDropOverlayProps>(
+  ({ theme, showOnlyDropzone }) => {
+    return {
+      height: "100vh",
+      width: "100vw",
+      visibility: showOnlyDropzone ? "visible" : "hidden",
+      zIndex: theme.zIndices.priority,
+      // ".stChatInput, .stChatInput *": {
+      //   pointerEvents: "none",
+      // },
     }
   }
 )
