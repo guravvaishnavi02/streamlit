@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 import styled from "@emotion/styled"
-
 import { Theme } from "@emotion/react"
+
 import { hasLightBackgroundColor } from "@streamlit/lib/src/theme"
 
 const chatBorderRadius = (theme: Theme): string => theme.radii.xxxl
