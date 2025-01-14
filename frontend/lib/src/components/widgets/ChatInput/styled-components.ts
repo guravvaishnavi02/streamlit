@@ -115,6 +115,14 @@ export const StyledInputInstructionsContainer = styled.div(({ theme }) => ({
   right: `calc(${theme.iconSizes.xl} + 2 * ${theme.spacing.sm} + ${theme.spacing.sm})`,
 }))
 
+// export interface StyledFileUploadDropzoneProps {
+
+// }
+
+export const StyledFileUploadDropzone = styled.div(({ theme }) => ({
+  borderRadius: theme.radii.xxxl,
+}))
+
 export interface StyledVerticalDividerProps {
   color?: string
 }
