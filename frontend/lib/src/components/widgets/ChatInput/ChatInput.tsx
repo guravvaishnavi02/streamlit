@@ -234,6 +234,50 @@ const MAX_VISIBLE_NUM_LINES = 6.5
 // to manage it better.
 const ROUNDING_OFFSET = 1
 
+interface UploadZoneProps {
+  acceptFile: AcceptFileValue
+  fileDragged: boolean
+  getRootProps: any
+  getInputProps: any
+  disabled: boolean
+}
+
+const UploadZone = ({
+  acceptFile,
+  fileDragged,
+  getRootProps,
+  getInputProps,
+  disabled,
+}: UploadZoneProps) =>
+  fileDragged ? (
+    <div
+      {...getRootProps()}
+      style={{
+        width: "100%",
+        border: "2px dashed #cccccc",
+        padding: "20px",
+        textAlign: "center",
+      }}
+    >
+      <input {...getInputProps()} />
+      <p>Drag 'n' drop some files here, or click to select files</p>
+    </div>
+  ) : (
+    <>
+      <div {...getRootProps()}>
+        <input {...getInputProps()} />
+        <BaseButton
+          kind={BaseButtonKind.BORDERLESS_ICON}
+          onClick={() => {}}
+          disabled={disabled}
+        >
+          <Icon content={AttachFile} size="base" color="inherit" />
+        </BaseButton>
+      </div>
+      <StyledVerticalDivider />
+    </>
+  )
+
 function ChatInput({
   width,
   element,
@@ -528,7 +572,6 @@ function ChatInput({
     window.addEventListener("dragover", handleDragOver)
     window.addEventListener("drop", handleDrop)
     window.addEventListener("dragleave", handleDragLeave)
-
     return () => {
       window.removeEventListener("dragover", handleDragOver)
       window.removeEventListener("drop", handleDrop)
@@ -543,39 +586,8 @@ function ChatInput({
     scrollHeight > 0 && chatInputRef.current
       ? Math.abs(scrollHeight - minHeight) > ROUNDING_OFFSET
       : false
-  const height = undefined // fileDragged ? theme.sizes.emptyDropdownHeight : undefined
 
-  const uploadZone =
-    acceptFile !== AcceptFileValue.None ? (
-      fileDragged ? (
-        <div
-          {...getRootProps()}
-          style={{
-            width: "100%",
-            border: "2px dashed #cccccc",
-            padding: "20px",
-            textAlign: "center",
-          }}
-        >
-          <input {...getInputProps()} />
-          <p>Drag 'n' drop some files here, or click to select files</p>
-        </div>
-      ) : (
-        <>
-          <div {...getRootProps()}>
-            <input {...getInputProps()} />
-            <BaseButton
-              kind={BaseButtonKind.BORDERLESS_ICON}
-              onClick={() => {}}
-              disabled={disabled}
-            >
-              <Icon content={AttachFile} size="base" color="inherit" />
-            </BaseButton>
-          </div>
-          <StyledVerticalDivider />
-        </>
-      )
-    ) : null
+  const showDropZone = acceptFile !== AcceptFileValue.None && fileDragged
 
   return (
     <>
@@ -599,8 +611,16 @@ function ChatInput({
         height={height}
       >
         <StyledChatInput>
-          {uploadZone}
-          {fileDragged ? null : (
+          {acceptFile === AcceptFileValue.None ? null : (
+            <UploadZone
+              acceptFile={acceptFile}
+              fileDragged={fileDragged}
+              getRootProps={getRootProps}
+              getInputProps={getInputProps}
+              disabled={disabled}
+            />
+          )}
+          {showDropZone ? null : (
             <>
               <UITextArea
                 inputRef={chatInputRef}

@@ -20,24 +20,17 @@ import { isNullOrUndefined } from "@streamlit/lib/src/util/utils"
 
 export interface StyledChatInputContainerProps {
   width: number
-  height: string | undefined
 }
 
 export const StyledChatInputContainer =
-  styled.div<StyledChatInputContainerProps>(({ theme, width, height }) => {
-    const props = {
+  styled.div<StyledChatInputContainerProps>(({ theme, width }) => {
+    return {
       borderRadius: theme.radii.xxxl,
       display: "flex",
       backgroundColor:
         theme.colors.widgetBackgroundColor ?? theme.colors.secondaryBg,
       width: `${width}px`,
     }
-    return isNullOrUndefined(height)
-      ? props
-      : {
-          ...props,
-          height: height,
-        }
   })
 
 export const StyledChatInput = styled.div(({ theme }) => {
