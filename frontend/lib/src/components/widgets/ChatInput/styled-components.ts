@@ -20,18 +20,23 @@ import { isNullOrUndefined } from "@streamlit/lib/src/util/utils"
 
 export interface StyledChatInputContainerProps {
   width: number
+  showOnlyDropzone: boolean
 }
 
 export const StyledChatInputContainer =
-  styled.div<StyledChatInputContainerProps>(({ theme, width }) => {
-    return {
-      borderRadius: theme.radii.xxxl,
-      display: "flex",
-      backgroundColor:
-        theme.colors.widgetBackgroundColor ?? theme.colors.secondaryBg,
-      width: `${width}px`,
+  styled.div<StyledChatInputContainerProps>(
+    ({ theme, width, showOnlyDropzone }) => {
+      return {
+        border: showOnlyDropzone ? `${theme.sizes.borderWidth} solid` : "none",
+        borderColor: theme.colors.primary,
+        borderRadius: theme.radii.xxxl,
+        display: "flex",
+        backgroundColor:
+          theme.colors.widgetBackgroundColor ?? theme.colors.secondaryBg,
+        width: `${width}px`,
+      }
     }
-  })
+  )
 
 export const StyledChatInput = styled.div(({ theme }) => {
   return {
@@ -120,7 +125,12 @@ export const StyledInputInstructionsContainer = styled.div(({ theme }) => ({
 // }
 
 export const StyledFileUploadDropzone = styled.div(({ theme }) => ({
-  borderRadius: theme.radii.xxxl,
+  height: theme.sizes.emptyDropdownHeight,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  margin: "auto",
+  color: theme.colors.primary,
 }))
 
 export interface StyledVerticalDividerProps {
