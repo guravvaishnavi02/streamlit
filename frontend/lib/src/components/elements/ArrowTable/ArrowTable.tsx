@@ -163,7 +163,10 @@ function generateTableCell(
           id={styledCell?.cssId}
           className={styledCell?.cssClass}
         >
-          <StreamlitMarkdown source={formattedContent} allowHTML={false} />
+          <StreamlitMarkdown
+            source={formattedContent || "\u00A0"}
+            allowHTML={false}
+          />
         </StyledTableCellHeader>
       )
     }
@@ -175,7 +178,10 @@ function generateTableCell(
           className={styledCell?.cssClass}
           style={style}
         >
-          <StreamlitMarkdown source={formattedContent} allowHTML={false} />
+          <StreamlitMarkdown
+            source={formattedContent || "\u00A0"}
+            allowHTML={false}
+          />
         </StyledTableCell>
       )
     }

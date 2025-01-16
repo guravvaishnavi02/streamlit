@@ -545,7 +545,7 @@ export function format(
   const fieldType = field?.type
 
   if (isNullOrUndefined(x)) {
-    return "&nbsp;"
+    return ""
   }
 
   // date
