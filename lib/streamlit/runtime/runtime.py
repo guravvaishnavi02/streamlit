@@ -737,7 +737,12 @@ Please report this bug at https://github.com/streamlit/streamlit/issues.
         # script_run_count for this session, and update the cache
         if msg.WhichOneof("type") == "script_finished" and (
             msg.script_finished == ForwardMsg.FINISHED_SUCCESSFULLY
-            or msg.script_finished == ForwardMsg.FINISHED_FRAGMENT_RUN_SUCCESSFULLY
+            or (
+                config.get_option(
+                    "global.includeFragmentRunsInForwardMessageCacheCount"
+                )
+                and msg.script_finished == ForwardMsg.FINISHED_FRAGMENT_RUN_SUCCESSFULLY
+            )
         ):
             _LOGGER.debug(
                 "Script run finished successfully; "
