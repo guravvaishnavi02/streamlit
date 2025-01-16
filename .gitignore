@@ -70,6 +70,9 @@ yarn-error.log*
 # Dependency directories
 node_modules/
 
+# TS Build files
+tsconfig.tsbuildinfo
+
 # ESLint
 .eslintcache
 

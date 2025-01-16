@@ -19,7 +19,6 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import JSON5 from "json5"
 import { PickingInfo, ViewStateChangeParameters } from "@deck.gl/core"
 import isEqual from "lodash/isEqual"
-import { TooltipContent } from "@deck.gl/core/dist/lib/tooltip"
 import { parseToRgba } from "color2k"
 
 import { useStWidthHeight } from "@streamlit/lib/src/hooks/useStWidthHeight"
@@ -61,6 +60,11 @@ type UseDeckGlShape = {
   viewState: Record<string, unknown>
   width: number | string
 }
+
+type TooltipContent = {
+  html?: string
+  text?: string
+} | null
 
 export type UseDeckGlProps = Omit<DeckGLProps, "mapboxToken"> & {
   isLightTheme: boolean

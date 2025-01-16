@@ -40,13 +40,13 @@ export interface Props {
 
 export class SessionInfo {
   /** Our current SessionInfo properties.*/
-  private _current?: Props
+  _current?: Props
 
   /**
    * Our last SessionInfo props if there is no currently active session, or
    * undefined if there is one.
    */
-  private _last?: Props
+  _last?: Props
 
   /** Return the current SessionInfo props. Throw an error if the props are undefined. */
   public get current(): Props {

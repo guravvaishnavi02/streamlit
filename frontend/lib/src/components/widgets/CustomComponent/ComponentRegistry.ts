@@ -29,9 +29,9 @@ export type ComponentMessageListener = (
  * Dispatches iframe messages to ComponentInstances.
  */
 export class ComponentRegistry {
-  private readonly endpoints: StreamlitEndpoints
+  readonly endpoints: StreamlitEndpoints
 
-  private readonly msgListeners = new Map<
+  readonly msgListeners = new Map<
     MessageEventSource,
     ComponentMessageListener
   >()
@@ -67,7 +67,7 @@ export class ComponentRegistry {
     return this.endpoints.buildComponentURL(componentName, path)
   }
 
-  private onMessageEvent = (event: MessageEvent): void => {
+  onMessageEvent = (event: MessageEvent): void => {
     if (
       isNullOrUndefined(event.data) ||
       !event.data.hasOwnProperty("isStreamlitMessage")

@@ -16,6 +16,7 @@
 
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react-swc"
+import dts from "vite-plugin-dts"
 import viteTsconfigPaths from "vite-tsconfig-paths"
 
 import path from "path"
@@ -33,12 +34,31 @@ export default defineConfig({
       plugins: [["@swc/plugin-emotion", {}]],
     }),
     viteTsconfigPaths(),
+    dts({
+      insertTypesEntry: true,
+    }),
   ],
   build: {
     outDir: "dist",
     sourcemap: DEV_BUILD,
+    lib: {
+      // Specify the entry point of your library
+      entry: path.resolve(__dirname, "src/index.ts"),
+      name: "@streamlit/lib", // Replace with your library's name
+      fileName: format => `streamlit-lib.${format}.js`,
+      formats: ["es", "umd"], // Output formats
+    },
     rollupOptions: {
       input: "src/index.ts",
+      // Externalize dependencies that shouldn't be bundled into your library
+      external: ["react", "react-dom", "@emotion/react"],
+      output: {
+        globals: {
+          react: "React",
+          "react-dom": "ReactDOM",
+          "@emotion/react": "emotionReact",
+        },
+      },
     },
   },
   resolve: {

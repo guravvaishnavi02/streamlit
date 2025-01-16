@@ -24,8 +24,7 @@ import {
 } from "@streamlit/lib/src/proto"
 import { render } from "@streamlit/lib/src/test_util"
 import { WidgetStateManager } from "@streamlit/lib/src/WidgetStateManager"
-
-import { withTimezones } from "src/util/withTimezones"
+import { withTimezones } from "@streamlit/lib/src/util/withTimezones"
 
 import Slider, { Props } from "./Slider"
 

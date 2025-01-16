@@ -447,7 +447,7 @@ performance-lighthouse:
 .PHONY frontend-lib-prod:
 # Build the production version for @streamlit/lib.
 frontend-lib-prod:
-	cd frontend/ ; yarn workspace @streamlit/lib build:prod;
+	cd frontend/ ; yarn workspace @streamlit/lib build;
 
 .PHONY streamlit-lib-prod:
 # Build the production version for @streamlit/lib while also doing a make init so it's a single command.
