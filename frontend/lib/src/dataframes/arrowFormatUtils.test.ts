@@ -38,7 +38,7 @@ import {
 
 describe("format", () => {
   test("null", () => {
-    expect(format(null)).toEqual("&nbsp;")
+    expect(format(null)).toEqual("")
   })
 
   test("string", () => {
